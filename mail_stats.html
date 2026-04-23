@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analisi Mail Inviate</title>
+  <style>
+    :root {
+      --bg: #f3f1ec;
+      --panel: #fbfaf7;
+      --panel-2: #f0ede6;
+      --text: #141414;
+      --muted: #5e5a52;
+      --line: #d7d2c8;
+      --line-strong: #999180;
+      --accent: #1f5f52;
+      --accent-2: #b05731;
+      --accent-soft: #dbe8e4;
+      --warning-soft: #efe1d9;
+      --shadow: 0 12px 24px rgba(20, 20, 20, 0.05);
+      --radius: 0px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent 180px),
+        repeating-linear-gradient(
+          90deg,
+          rgba(20, 20, 20, 0.02) 0,
+          rgba(20, 20, 20, 0.02) 1px,
+          transparent 1px,
+          transparent 36px
+        ),
+        var(--bg);
+      color: var(--text);
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+
+    .page {
+      width: min(1220px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 40px;
+    }
+
+    .hero,
+    .panel,
+    .metric {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+      gap: 0;
+      margin-bottom: 16px;
+    }
+
+    .hero-main,
+    .hero-side {
+      padding: 24px;
+    }
+
+    .hero-main {
+      border-right: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 10px;
+      border: 1px solid var(--line-strong);
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: 0.76rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      font-family: "Times New Roman", Times, serif;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      line-height: 0.95;
+      margin-top: 14px;
+      max-width: 10ch;
+    }
+
+    h2 {
+      font-size: 1.55rem;
+      line-height: 1;
+    }
+
+    .lead {
+      margin: 16px 0 0;
+      max-width: 58ch;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 1rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .button,
+    .file-label,
+    .select,
+    .input {
+      appearance: none;
+      border: 1px solid var(--line-strong);
+      border-radius: 0;
+      background: #ffffff;
+      color: var(--text);
+      font: inherit;
+    }
+
+    .button,
+    .file-label {
+      padding: 10px 14px;
+      text-decoration: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+    }
+
+    .button:hover,
+    .file-label:hover {
+      background: var(--panel-2);
+    }
+
+    .button.primary,
+    .file-label {
+      background: var(--text);
+      color: #ffffff;
+      border-color: var(--text);
+    }
+
+    .button.primary:hover,
+    .file-label:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .button.ghost {
+      background: transparent;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .status-label {
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.76rem;
+    }
+
+    .status-value {
+      margin-top: 10px;
+      font-size: 1.7rem;
+      line-height: 1.05;
+      font-family: "Times New Roman", Times, serif;
+    }
+
+    .status-note {
+      margin-top: 10px;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.96rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .metric {
+      grid-column: span 3;
+      padding: 18px;
+      min-height: 144px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .metric-kicker {
+      color: var(--muted);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .metric-value {
+      margin-top: 10px;
+      font-size: clamp(1.9rem, 3vw, 2.7rem);
+      line-height: 0.95;
+      font-family: "Times New Roman", Times, serif;
+    }
+
+    .metric-sub {
+      margin-top: 10px;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 0.93rem;
+    }
+
+    .panel {
+      padding: 18px;
+      overflow: hidden;
+    }
+
+    .panel.full {
+      grid-column: 1 / -1;
+    }
+
+    .panel.wide {
+      grid-column: span 8;
+    }
+
+    .panel.side {
+      grid-column: span 4;
+    }
+
+    .subheading {
+      margin: 10px 0 16px;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.96rem;
+    }
+
+    .chart-shell {
+      border: 1px solid var(--line);
+      background: #ffffff;
+      padding: 12px;
+      min-height: 220px;
+    }
+
+    .filter-panel {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 12px;
+      align-items: start;
+    }
+
+    .filter-block {
+      grid-column: span 4;
+      display: grid;
+      gap: 8px;
+    }
+
+    .filter-block label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .select,
+    .input {
+      width: 100%;
+      padding: 10px 12px;
+      min-height: 42px;
+    }
+
+    .chips {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--line-strong);
+      background: var(--panel-2);
+      font-size: 0.9rem;
+    }
+
+    .chip button {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: var(--accent-2);
+      padding: 0;
+      font: inherit;
+    }
+
+    .hint {
+      grid-column: 1 / -1;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 0.93rem;
+    }
+
+    .heatmap {
+      display: grid;
+      grid-template-columns: 84px repeat(24, minmax(0, 1fr));
+      gap: 4px;
+      align-items: center;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .heatmap-header,
+    .heatmap-label {
+      color: var(--muted);
+      font-size: 0.76rem;
+      text-align: center;
+    }
+
+    .heatmap-label {
+      text-align: left;
+      font-weight: 700;
+    }
+
+    .heat-cell {
+      aspect-ratio: 1 / 1;
+      min-width: 20px;
+      border: 1px solid #e1ddd5;
+      border-radius: 0;
+      background: #f7f5f1;
+      cursor: pointer;
+      transition: border-color 140ms ease, background 140ms ease;
+    }
+
+    .heat-cell:hover {
+      border-color: var(--text);
+    }
+
+    .heat-cell.active {
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 1px var(--accent);
+    }
+
+    .selection-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .selection-meta {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .recipient-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .recipient-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      border-radius: 0;
+      align-items: center;
+    }
+
+    .recipient-main {
+      min-width: 0;
+    }
+
+    .recipient-name {
+      font-size: 0.97rem;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .recipient-meta {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.4;
+    }
+
+    .recipient-badge {
+      min-width: 56px;
+      padding: 8px 10px;
+      text-align: center;
+      border: 1px solid var(--line-strong);
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .empty {
+      padding: 14px;
+      border: 1px dashed var(--line-strong);
+      background: #ffffff;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .bar-chart {
+      display: grid;
+      grid-template-columns: repeat(24, minmax(0, 1fr));
+      gap: 4px;
+      align-items: end;
+      min-height: 250px;
+      padding-top: 18px;
+    }
+
+    .bar {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .bar-fill {
+      width: 100%;
+      min-height: 8px;
+      border: 1px solid rgba(20, 20, 20, 0.14);
+      border-radius: 0;
+      background: linear-gradient(180deg, #cad9d5 0%, #5f8f84 100%);
+      position: relative;
+    }
+
+    .bar-fill::after {
+      content: attr(data-count);
+      position: absolute;
+      top: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 140ms ease;
+      white-space: nowrap;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    .bar-fill:hover::after {
+      opacity: 1;
+    }
+
+    .bar-label {
+      color: var(--muted);
+      font-size: 0.74rem;
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 980px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-main {
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .metric {
+        grid-column: span 6;
+      }
+
+      .panel.wide,
+      .panel.side {
+        grid-column: 1 / -1;
+      }
+
+      .filter-block {
+        grid-column: span 6;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .page {
+        width: min(100% - 20px, 100%);
+        padding-top: 16px;
+      }
+
+      .hero-main,
+      .hero-side,
+      .panel,
+      .metric {
+        padding: 16px;
+      }
+
+      .metric,
+      .filter-block {
+        grid-column: 1 / -1;
+      }
+
+      .heatmap {
+        grid-template-columns: 70px repeat(24, minmax(16px, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="hero-main">
+        <div class="eyebrow">Analisi produttivita mail</div>
+        <h1>Orari di invio e destinatari, senza rumore.</h1>
+        <p class="lead">
+          Dashboard locale per leggere i tuoi ritmi di invio in modo netto. Puoi anche escludere
+          singoli destinatari o interi domini dall'analisi e rigenerare subito tutti i grafici.
+        </p>
+        <div class="actions">
+          <button class="button primary" id="reloadButton" type="button">Ricarica `sent_emails.json`</button>
+          <label class="file-label" for="fileInput">Apri un altro JSON</label>
+          <input id="fileInput" type="file" accept=".json,application/json">
+        </div>
+      </div>
+
+      <aside class="hero-side">
+        <div class="status-label">Stato dataset</div>
+        <div class="status-value" id="statusTitle">In attesa del file</div>
+        <div class="status-note" id="statusText">
+          Provo a leggere automaticamente `sent_emails.json` dalla stessa cartella. Se apri la pagina
+          direttamente dal browser e il file non viene letto, usa il caricamento manuale.
+        </div>
+      </aside>
+    </section>
+
+    <section class="grid" id="dashboard" aria-live="polite">
+      <article class="metric">
+        <div class="metric-kicker">Email analizzate</div>
+        <div class="metric-value" id="metricTotal">-</div>
+        <div class="metric-sub" id="metricRange">Periodo non caricato</div>
+      </article>
+
+      <article class="metric">
+        <div class="metric-kicker">Ora piu intensa</div>
+        <div class="metric-value" id="metricPeakHour">-</div>
+        <div class="metric-sub" id="metricPeakHourDetail">Carica il dataset per calcolarla</div>
+      </article>
+
+      <article class="metric">
+        <div class="metric-kicker">Giorno piu attivo</div>
+        <div class="metric-value" id="metricPeakDay">-</div>
+        <div class="metric-sub" id="metricPeakDayDetail">Nessun dato disponibile</div>
+      </article>
+
+      <article class="metric">
+        <div class="metric-kicker">Destinatari unici</div>
+        <div class="metric-value" id="metricRecipients">-</div>
+        <div class="metric-sub" id="metricRecipientsDetail">Nessun dato disponibile</div>
+      </article>
+
+      <article class="panel full">
+        <h2>Filtri</h2>
+        <div class="subheading">
+          Escludi singoli indirizzi o interi domini. Tutte le metriche, il calore settimanale e gli
+          elenchi vengono ricalcolati coerentemente sulla selezione attiva.
+        </div>
+        <div class="filter-panel">
+          <div class="filter-block">
+            <label for="recipientSelect">Escludi destinatario</label>
+            <select class="select" id="recipientSelect"></select>
+            <div class="filter-actions">
+              <button class="button ghost" id="addRecipientExclusion" type="button">Escludi destinatario</button>
+            </div>
+          </div>
+
+          <div class="filter-block">
+            <label for="domainSelect">Escludi dominio</label>
+            <select class="select" id="domainSelect"></select>
+            <div class="filter-actions">
+              <button class="button ghost" id="addDomainExclusion" type="button">Escludi dominio</button>
+            </div>
+          </div>
+
+          <div class="filter-block">
+            <label for="manualFilter">Aggiunta manuale</label>
+            <input class="input" id="manualFilter" type="text" placeholder="es. nome@dominio.it oppure dominio.it">
+            <div class="filter-actions">
+              <button class="button ghost" id="addManualFilter" type="button">Aggiungi filtro</button>
+              <button class="button ghost" id="clearFilters" type="button">Azzera filtri</button>
+            </div>
+          </div>
+
+          <div class="chips" id="activeFilters"></div>
+          <div class="hint" id="filterHint">
+            Nessun filtro attivo.
+          </div>
+        </div>
+      </article>
+
+      <article class="panel full">
+        <h2>Calore settimanale</h2>
+        <div class="subheading">
+          Giorno della settimana per ora del giorno. Clicca una cella per vedere i destinatari delle
+          mail inviate in quella specifica fascia.
+        </div>
+        <div class="chart-shell">
+          <div class="heatmap" id="heatmap"></div>
+        </div>
+      </article>
+
+      <article class="panel wide">
+        <div class="selection-title">
+          <h2>Dettaglio fascia selezionata</h2>
+          <div class="selection-meta" id="selectionMeta">Nessuna fascia selezionata</div>
+        </div>
+        <div class="recipient-list" id="selectionList">
+          <div class="empty">
+            Seleziona una cella del calore settimanale per vedere i destinatari coinvolti, il numero
+            di email e gli ultimi invii in quella fascia.
+          </div>
+        </div>
+      </article>
+
+      <article class="panel side">
+        <h2>Domini principali</h2>
+        <div class="subheading">
+          Distribuzione aggregata per dominio destinatario dopo l'applicazione dei filtri correnti.
+        </div>
+        <div class="recipient-list" id="domainList"></div>
+      </article>
+
+      <article class="panel full">
+        <h2>Distribuzione per ora</h2>
+        <div class="subheading">
+          Istogramma orario essenziale, ricalcolato sulla selezione attiva.
+        </div>
+        <div class="chart-shell">
+          <div class="bar-chart" id="hourChart"></div>
+        </div>
+      </article>
+
+      <article class="panel full">
+        <h2>Destinatari principali</h2>
+        <div class="subheading">
+          Contatti piu frequenti dopo i filtri, con volume, orario medio preferito e periodo di relazione.
+        </div>
+        <div class="recipient-list" id="recipientList"></div>
+      </article>
+    </section>
+
+    <p class="footer-note">
+      Nota: le date vengono lette dal JSON e convertite nel fuso `Europe/Rome` per una lettura piu realistica
+      dei tuoi orari di produttivita. Quando applichi un filtro, l'email viene esclusa se contiene almeno un
+      destinatario o dominio escluso.
+    </p>
+  </main>
+
+  <script>
+    const TIMEZONE = "Europe/Rome";
+    const DAY_NAMES = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
+    const DAY_KEYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+    const DAY_LABELS = {
+      monday: "Lunedi",
+      tuesday: "Martedi",
+      wednesday: "Mercoledi",
+      thursday: "Giovedi",
+      friday: "Venerdi",
+      saturday: "Sabato",
+      sunday: "Domenica"
+    };
+
+    const state = {
+      raw: null,
+      allEntries: [],
+      exclusions: {
+        recipients: new Set(),
+        domains: new Set()
+      }
+    };
+
+    const formatters = {
+      hour: new Intl.DateTimeFormat("en-GB", {
+        timeZone: TIMEZONE,
+        hour: "2-digit",
+        hourCycle: "h23"
+      }),
+      weekday: new Intl.DateTimeFormat("en-US", {
+        timeZone: TIMEZONE,
+        weekday: "long"
+      }),
+      date: new Intl.DateTimeFormat("it-IT", {
+        timeZone: TIMEZONE,
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      }),
+      monthYear: new Intl.DateTimeFormat("it-IT", {
+        timeZone: TIMEZONE,
+        month: "long",
+        year: "numeric"
+      })
+    };
+
+    const els = {
+      statusTitle: document.getElementById("statusTitle"),
+      statusText: document.getElementById("statusText"),
+      metricTotal: document.getElementById("metricTotal"),
+      metricRange: document.getElementById("metricRange"),
+      metricPeakHour: document.getElementById("metricPeakHour"),
+      metricPeakHourDetail: document.getElementById("metricPeakHourDetail"),
+      metricPeakDay: document.getElementById("metricPeakDay"),
+      metricPeakDayDetail: document.getElementById("metricPeakDayDetail"),
+      metricRecipients: document.getElementById("metricRecipients"),
+      metricRecipientsDetail: document.getElementById("metricRecipientsDetail"),
+      recipientSelect: document.getElementById("recipientSelect"),
+      domainSelect: document.getElementById("domainSelect"),
+      manualFilter: document.getElementById("manualFilter"),
+      activeFilters: document.getElementById("activeFilters"),
+      filterHint: document.getElementById("filterHint"),
+      addRecipientExclusion: document.getElementById("addRecipientExclusion"),
+      addDomainExclusion: document.getElementById("addDomainExclusion"),
+      addManualFilter: document.getElementById("addManualFilter"),
+      clearFilters: document.getElementById("clearFilters"),
+      heatmap: document.getElementById("heatmap"),
+      selectionMeta: document.getElementById("selectionMeta"),
+      selectionList: document.getElementById("selectionList"),
+      hourChart: document.getElementById("hourChart"),
+      recipientList: document.getElementById("recipientList"),
+      domainList: document.getElementById("domainList"),
+      fileInput: document.getElementById("fileInput"),
+      reloadButton: document.getElementById("reloadButton")
+    };
+
+    function setStatus(title, text) {
+      els.statusTitle.textContent = title;
+      els.statusText.textContent = text;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function average(values) {
+      if (!values.length) {
+        return 0;
+      }
+      return values.reduce((sum, value) => sum + value, 0) / values.length;
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function getDomain(recipient) {
+      const normalized = String(recipient).trim().toLowerCase();
+      return normalized.includes("@") ? normalized.split("@").pop() : "sconosciuto";
+    }
+
+    function parseDataset(raw) {
+      const messages = Array.isArray(raw?.messages) ? raw.messages : [];
+      const valid = [];
+
+      for (const message of messages) {
+        if (!message || !message.date) {
+          continue;
+        }
+
+        const date = new Date(message.date);
+        if (Number.isNaN(date.getTime())) {
+          continue;
+        }
+
+        const recipients = Array.isArray(message.to)
+          ? message.to.map((item) => String(item).trim()).filter(Boolean)
+          : [];
+
+        const hour = Number(formatters.hour.format(date));
+        const weekdayKey = formatters.weekday.format(date).toLowerCase();
+        const weekdayIndex = DAY_KEYS.indexOf(weekdayKey);
+
+        if (weekdayIndex === -1) {
+          continue;
+        }
+
+        valid.push({
+          date,
+          hour,
+          weekdayIndex,
+          recipients,
+          domains: recipients.map(getDomain)
+        });
+      }
+
+      return valid;
+    }
+
+    function isExcluded(entry) {
+      const recipientMatch = entry.recipients.some((recipient) =>
+        state.exclusions.recipients.has(recipient.toLowerCase())
+      );
+
+      const domainMatch = entry.domains.some((domain) =>
+        state.exclusions.domains.has(domain.toLowerCase())
+      );
+
+      return recipientMatch || domainMatch;
+    }
+
+    function getFilteredEntries() {
+      return state.allEntries.filter((entry) => !isExcluded(entry));
+    }
+
+    function buildCatalog(entries) {
+      const recipients = new Map();
+      const domains = new Map();
+
+      for (const entry of entries) {
+        for (const recipient of entry.recipients) {
+          recipients.set(recipient, (recipients.get(recipient) || 0) + 1);
+          const domain = getDomain(recipient);
+          domains.set(domain, (domains.get(domain) || 0) + 1);
+        }
+      }
+
+      return {
+        recipients: [...recipients.entries()]
+          .map(([label, count]) => ({ label, count }))
+          .sort((a, b) => b.count - a.count),
+        domains: [...domains.entries()]
+          .map(([label, count]) => ({ label, count }))
+          .sort((a, b) => b.count - a.count)
+      };
+    }
+
+    function computeStats(entries) {
+      const hourlyCounts = Array.from({ length: 24 }, () => 0);
+      const weekdayCounts = Array.from({ length: 7 }, () => 0);
+      const heatmap = Array.from({ length: 7 }, () => Array.from({ length: 24 }, () => 0));
+      const heatmapDetails = Array.from({ length: 7 }, () => Array.from({ length: 24 }, () => []));
+      const recipientMap = new Map();
+      const domainMap = new Map();
+
+      let recipientsTotal = 0;
+
+      for (const entry of entries) {
+        hourlyCounts[entry.hour] += 1;
+        weekdayCounts[entry.weekdayIndex] += 1;
+        heatmap[entry.weekdayIndex][entry.hour] += 1;
+        heatmapDetails[entry.weekdayIndex][entry.hour].push(entry);
+        recipientsTotal += entry.recipients.length;
+
+        for (const recipient of entry.recipients) {
+          const normalized = recipient.toLowerCase();
+          const domain = getDomain(recipient);
+
+          if (!recipientMap.has(normalized)) {
+            recipientMap.set(normalized, {
+              label: recipient,
+              count: 0,
+              hours: [],
+              first: entry.date,
+              last: entry.date
+            });
+          }
+
+          const recipientStats = recipientMap.get(normalized);
+          recipientStats.count += 1;
+          recipientStats.hours.push(entry.hour);
+          if (entry.date < recipientStats.first) {
+            recipientStats.first = entry.date;
+          }
+          if (entry.date > recipientStats.last) {
+            recipientStats.last = entry.date;
+          }
+
+          domainMap.set(domain, (domainMap.get(domain) || 0) + 1);
+        }
+      }
+
+      const sortedRecipients = [...recipientMap.values()].sort((a, b) => b.count - a.count);
+      const sortedDomains = [...domainMap.entries()]
+        .map(([domain, count]) => ({ domain, count }))
+        .sort((a, b) => b.count - a.count);
+
+      const peakHour = hourlyCounts.reduce((best, count, hour) => {
+        if (count > best.count) {
+          return { hour, count };
+        }
+        return best;
+      }, { hour: 0, count: 0 });
+
+      const peakDay = weekdayCounts.reduce((best, count, index) => {
+        if (count > best.count) {
+          return { index, count };
+        }
+        return best;
+      }, { index: 0, count: 0 });
+
+      const dates = entries.map((entry) => entry.date).sort((a, b) => a - b);
+      const firstDate = dates[0] || null;
+      const lastDate = dates[dates.length - 1] || null;
+
+      return {
+        totalEmails: entries.length,
+        totalRecipients: recipientMap.size,
+        averageRecipientsPerEmail: entries.length ? recipientsTotal / entries.length : 0,
+        hourlyCounts,
+        weekdayCounts,
+        heatmap,
+        heatmapDetails,
+        peakHour,
+        peakDay,
+        firstDate,
+        lastDate,
+        recipients: sortedRecipients,
+        domains: sortedDomains
+      };
+    }
+
+    function renderMetrics(stats) {
+      const periodText = stats.firstDate && stats.lastDate
+        ? `${formatters.date.format(stats.firstDate)} - ${formatters.date.format(stats.lastDate)}`
+        : "Periodo non disponibile";
+
+      els.metricTotal.textContent = String(stats.totalEmails);
+      els.metricRange.textContent = periodText;
+      els.metricPeakHour.textContent = `${String(stats.peakHour.hour).padStart(2, "0")}:00`;
+      els.metricPeakHourDetail.textContent = `${stats.peakHour.count} email nella fascia oraria piu intensa`;
+      els.metricPeakDay.textContent = DAY_LABELS[DAY_KEYS[stats.peakDay.index]];
+      els.metricPeakDayDetail.textContent = `${stats.peakDay.count} email nel giorno piu attivo`;
+      els.metricRecipients.textContent = String(stats.totalRecipients);
+      els.metricRecipientsDetail.textContent = `${stats.averageRecipientsPerEmail.toFixed(2)} destinatari medi per email`;
+
+      const filterCount = state.exclusions.recipients.size + state.exclusions.domains.size;
+      const filterLabel = filterCount ? ` Filtri attivi: ${filterCount}.` : "";
+      setStatus(
+        `Dataset caricato: ${stats.totalEmails} email`,
+        `Periodo analizzato: ${periodText}. Fuso usato: ${TIMEZONE}.${filterLabel}`
+      );
+    }
+
+    function renderFilterControls() {
+      const catalog = buildCatalog(state.allEntries);
+      const recipientOptions = catalog.recipients
+        .filter((item) => !state.exclusions.recipients.has(item.label.toLowerCase()))
+        .slice(0, 200);
+      const domainOptions = catalog.domains
+        .filter((item) => !state.exclusions.domains.has(item.label.toLowerCase()))
+        .slice(0, 200);
+
+      els.recipientSelect.innerHTML = [
+        '<option value="">Seleziona un destinatario</option>',
+        ...recipientOptions.map((item) =>
+          `<option value="${escapeHtml(item.label)}">${escapeHtml(item.label)} (${item.count})</option>`
+        )
+      ].join("");
+
+      els.domainSelect.innerHTML = [
+        '<option value="">Seleziona un dominio</option>',
+        ...domainOptions.map((item) =>
+          `<option value="${escapeHtml(item.label)}">${escapeHtml(item.label)} (${item.count})</option>`
+        )
+      ].join("");
+
+      const chips = [];
+      for (const recipient of state.exclusions.recipients) {
+        chips.push(`<span class="chip">mail: ${escapeHtml(recipient)} <button type="button" data-kind="recipient" data-value="${escapeHtml(recipient)}">rimuovi</button></span>`);
+      }
+      for (const domain of state.exclusions.domains) {
+        chips.push(`<span class="chip">dominio: ${escapeHtml(domain)} <button type="button" data-kind="domain" data-value="${escapeHtml(domain)}">rimuovi</button></span>`);
+      }
+
+      els.activeFilters.innerHTML = chips.join("");
+      els.filterHint.textContent = chips.length
+        ? `${chips.length} filtri attivi. L'analisi usa solo le email rimaste dopo l'esclusione.`
+        : "Nessun filtro attivo.";
+
+      els.activeFilters.querySelectorAll("button").forEach((button) => {
+        button.addEventListener("click", () => {
+          removeExclusion(button.dataset.kind, button.dataset.value);
+        });
+      });
+    }
+
+    function renderHourChart(hourlyCounts) {
+      els.hourChart.innerHTML = "";
+      const max = Math.max(...hourlyCounts, 1);
+
+      hourlyCounts.forEach((count, hour) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "bar";
+
+        const fill = document.createElement("div");
+        fill.className = "bar-fill";
+        fill.style.height = `${Math.max(8, (count / max) * 210)}px`;
+        fill.dataset.count = `${count}`;
+        fill.title = `${String(hour).padStart(2, "0")}:00 - ${count} email`;
+
+        const label = document.createElement("div");
+        label.className = "bar-label";
+        label.textContent = String(hour).padStart(2, "0");
+
+        wrapper.append(fill, label);
+        els.hourChart.appendChild(wrapper);
+      });
+    }
+
+    function renderSelectionDetails(dayIndex, hour, entries) {
+      const dayLabel = DAY_LABELS[DAY_KEYS[dayIndex]];
+      const hourLabel = `${String(hour).padStart(2, "0")}:00`;
+      els.selectionMeta.textContent = `${dayLabel}, fascia ${hourLabel} - ${entries.length} email`;
+
+      if (!entries.length) {
+        els.selectionList.innerHTML = '<div class="empty">In questa fascia non risultano email inviate.</div>';
+        return;
+      }
+
+      const recipientCounts = new Map();
+      const datedEntries = [];
+
+      for (const entry of entries) {
+        const recipients = entry.recipients.length ? entry.recipients : ["(senza destinatario)"];
+        for (const recipient of recipients) {
+          recipientCounts.set(recipient, (recipientCounts.get(recipient) || 0) + 1);
+        }
+        datedEntries.push({
+          date: entry.date,
+          recipients
+        });
+      }
+
+      const topRecipients = [...recipientCounts.entries()]
+        .map(([label, count]) => ({ label, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 15);
+
+      const recentRows = datedEntries
+        .sort((a, b) => b.date - a.date)
+        .slice(0, 8)
+        .map((item) => `
+          <div class="recipient-row">
+            <div class="recipient-main">
+              <div class="recipient-name">${escapeHtml(formatters.date.format(item.date))}</div>
+              <div class="recipient-meta">${escapeHtml(item.recipients.join(", "))}</div>
+            </div>
+            <div class="recipient-badge">${String(item.recipients.length)}</div>
+          </div>
+        `)
+        .join("");
+
+      const topRows = topRecipients.map((recipient) => `
+        <div class="recipient-row">
+          <div class="recipient-main">
+            <div class="recipient-name">${escapeHtml(recipient.label)}</div>
+            <div class="recipient-meta">Presenze in questa fascia temporale</div>
+          </div>
+          <div class="recipient-badge">${recipient.count}</div>
+        </div>
+      `).join("");
+
+      els.selectionList.innerHTML = topRows + recentRows;
+    }
+
+    function renderHeatmap(matrix, details, defaultSelection) {
+      els.heatmap.innerHTML = "";
+      const max = Math.max(...matrix.flat(), 1);
+
+      const corner = document.createElement("div");
+      corner.className = "heatmap-header";
+      corner.textContent = "";
+      els.heatmap.appendChild(corner);
+
+      for (let hour = 0; hour < 24; hour += 1) {
+        const header = document.createElement("div");
+        header.className = "heatmap-header";
+        header.textContent = String(hour).padStart(2, "0");
+        els.heatmap.appendChild(header);
+      }
+
+      matrix.forEach((row, rowIndex) => {
+        const label = document.createElement("div");
+        label.className = "heatmap-label";
+        label.textContent = DAY_NAMES[rowIndex];
+        els.heatmap.appendChild(label);
+
+        row.forEach((count, hour) => {
+          const cell = document.createElement("button");
+          const intensity = count / max;
+          const lightness = 96 - intensity * 38;
+          cell.type = "button";
+          cell.className = "heat-cell";
+          cell.style.background = `hsl(160 22% ${lightness}%)`;
+          cell.title = `${DAY_NAMES[rowIndex]} ${String(hour).padStart(2, "0")}:00 - ${count} email`;
+          cell.setAttribute("aria-label", `${DAY_LABELS[DAY_KEYS[rowIndex]]} alle ${String(hour).padStart(2, "0")}:00, ${count} email`);
+          cell.addEventListener("click", () => {
+            els.heatmap.querySelectorAll(".heat-cell.active").forEach((item) => item.classList.remove("active"));
+            cell.classList.add("active");
+            renderSelectionDetails(rowIndex, hour, details[rowIndex][hour]);
+          });
+
+          if (defaultSelection.day === rowIndex && defaultSelection.hour === hour) {
+            cell.classList.add("active");
+          }
+
+          els.heatmap.appendChild(cell);
+        });
+      });
+
+      renderSelectionDetails(defaultSelection.day, defaultSelection.hour, details[defaultSelection.day][defaultSelection.hour]);
+    }
+
+    function renderRecipients(recipients) {
+      const top = recipients.slice(0, 15);
+      if (!top.length) {
+        els.recipientList.innerHTML = '<div class="empty">Nessun destinatario presente con i filtri correnti.</div>';
+        return;
+      }
+
+      els.recipientList.innerHTML = top.map((recipient) => {
+        const avgHour = Math.round(average(recipient.hours));
+        const period = `${formatters.monthYear.format(recipient.first)} - ${formatters.monthYear.format(recipient.last)}`;
+        return `
+          <div class="recipient-row">
+            <div class="recipient-main">
+              <div class="recipient-name">${escapeHtml(recipient.label)}</div>
+              <div class="recipient-meta">Ora media: ${String(avgHour).padStart(2, "0")}:00 | Periodo: ${period}</div>
+            </div>
+            <div class="recipient-badge">${recipient.count}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderDomains(domains) {
+      const top = domains.slice(0, 12);
+      if (!top.length) {
+        els.domainList.innerHTML = '<div class="empty">Nessun dominio presente con i filtri correnti.</div>';
+        return;
+      }
+
+      const max = top[0].count || 1;
+      els.domainList.innerHTML = top.map((domain) => `
+        <div class="recipient-row" style="background: linear-gradient(90deg, rgba(31,95,82,${clamp(domain.count / max, 0.14, 0.45)}), #ffffff);">
+          <div class="recipient-main">
+            <div class="recipient-name">${escapeHtml(domain.domain)}</div>
+            <div class="recipient-meta">Dominio ricorrente nel dataset filtrato</div>
+          </div>
+          <div class="recipient-badge">${domain.count}</div>
+        </div>
+      `).join("");
+    }
+
+    function refreshDashboard() {
+      if (!state.raw) {
+        return;
+      }
+
+      renderFilterControls();
+
+      const filteredEntries = getFilteredEntries();
+      const stats = computeStats(filteredEntries);
+
+      if (!stats.totalEmails) {
+        els.metricTotal.textContent = "0";
+        els.metricRange.textContent = "Nessuna email rimasta";
+        els.metricPeakHour.textContent = "-";
+        els.metricPeakHourDetail.textContent = "I filtri escludono tutto il dataset";
+        els.metricPeakDay.textContent = "-";
+        els.metricPeakDayDetail.textContent = "Nessun dato disponibile";
+        els.metricRecipients.textContent = "0";
+        els.metricRecipientsDetail.textContent = "Nessun destinatario disponibile";
+        els.heatmap.innerHTML = "";
+        els.hourChart.innerHTML = "";
+        els.selectionMeta.textContent = "Nessuna fascia selezionata";
+        els.selectionList.innerHTML = '<div class="empty">Con i filtri correnti non rimangono email da analizzare.</div>';
+        els.recipientList.innerHTML = '<div class="empty">Con i filtri correnti non rimangono destinatari.</div>';
+        els.domainList.innerHTML = '<div class="empty">Con i filtri correnti non rimangono domini.</div>';
+        setStatus("Dataset filtrato a zero", "Rimuovi uno o piu filtri per tornare a vedere i dati.");
+        return;
+      }
+
+      renderMetrics(stats);
+      renderHeatmap(stats.heatmap, stats.heatmapDetails, {
+        day: stats.peakDay.index,
+        hour: stats.peakHour.hour
+      });
+      renderHourChart(stats.hourlyCounts);
+      renderRecipients(stats.recipients);
+      renderDomains(stats.domains);
+    }
+
+    function addExclusion(kind, value) {
+      const normalized = String(value || "").trim().toLowerCase();
+      if (!normalized) {
+        return;
+      }
+
+      if (kind === "recipient") {
+        state.exclusions.recipients.add(normalized);
+      } else if (kind === "domain") {
+        state.exclusions.domains.add(normalized);
+      }
+
+      els.manualFilter.value = "";
+      refreshDashboard();
+    }
+
+    function removeExclusion(kind, value) {
+      const normalized = String(value || "").trim().toLowerCase();
+      if (kind === "recipient") {
+        state.exclusions.recipients.delete(normalized);
+      } else if (kind === "domain") {
+        state.exclusions.domains.delete(normalized);
+      }
+      refreshDashboard();
+    }
+
+    function applyData(raw) {
+      state.raw = raw;
+      state.allEntries = parseDataset(raw);
+      refreshDashboard();
+    }
+
+    async function loadDefaultFile() {
+      setStatus("Caricamento in corso", "Sto cercando `sent_emails.json` nella stessa cartella della pagina.");
+
+      try {
+        const response = await fetch("./sent_emails.json", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const raw = await response.json();
+        applyData(raw);
+      } catch (error) {
+        setStatus(
+          "Caricamento automatico non riuscito",
+          "Il browser non ha potuto leggere `sent_emails.json` automaticamente. Usa il caricamento manuale oppure avvia un piccolo server locale da questa cartella."
+        );
+      }
+    }
+
+    els.addRecipientExclusion.addEventListener("click", () => {
+      addExclusion("recipient", els.recipientSelect.value);
+      els.recipientSelect.value = "";
+    });
+
+    els.addDomainExclusion.addEventListener("click", () => {
+      addExclusion("domain", els.domainSelect.value);
+      els.domainSelect.value = "";
+    });
+
+    els.addManualFilter.addEventListener("click", () => {
+      const value = els.manualFilter.value.trim();
+      if (!value) {
+        return;
+      }
+      const kind = value.includes("@") ? "recipient" : "domain";
+      addExclusion(kind, value);
+    });
+
+    els.clearFilters.addEventListener("click", () => {
+      state.exclusions.recipients.clear();
+      state.exclusions.domains.clear();
+      refreshDashboard();
+    });
+
+    els.fileInput.addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) {
+        return;
+      }
+
+      try {
+        const text = await file.text();
+        const raw = JSON.parse(text);
+        state.exclusions.recipients.clear();
+        state.exclusions.domains.clear();
+        applyData(raw);
+      } catch (error) {
+        setStatus("File non valido", "Non sono riuscito a leggere questo JSON. Controlla che il file sia corretto.");
+      }
+    });
+
+    els.reloadButton.addEventListener("click", () => {
+      state.exclusions.recipients.clear();
+      state.exclusions.domains.clear();
+      loadDefaultFile();
+    });
+
+    loadDefaultFile();
+  </script>
+</body>
+</html>

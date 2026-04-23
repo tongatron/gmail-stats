@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Local Gmail export tools for sent email analytics",
   "scripts": {
-    "export:sent": "node scripts/export_sent_emails.mjs"
+    "export:sent": "node scripts/export_sent_emails.mjs",
+    "gmail:sync": "./scripts/sync_sent_emails.sh"
   },
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.1",

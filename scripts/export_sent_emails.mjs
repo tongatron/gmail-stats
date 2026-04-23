@@ -9,13 +9,18 @@ const ROOT = process.cwd();
 const DEFAULT_CREDENTIALS_PATH = path.join(ROOT, "credentials.json");
 const DEFAULT_TOKEN_PATH = path.join(ROOT, "token.json");
 const DEFAULT_OUTPUT_PATH = path.join(ROOT, "sent_emails_all_years.json");
-const CONCURRENCY = 20;
+const DEFAULT_CHECKPOINT_PATH = path.join(ROOT, ".gmail_export_checkpoint.json");
+const CONCURRENCY = 3;
+const REQUEST_DELAY_MS = 150;
+const MAX_RETRIES = 8;
+const CHECKPOINT_EVERY = 25;
 
 function parseArgs(argv) {
   const options = {
     credentials: DEFAULT_CREDENTIALS_PATH,
     token: DEFAULT_TOKEN_PATH,
     output: DEFAULT_OUTPUT_PATH,
+    checkpoint: DEFAULT_CHECKPOINT_PATH,
     query: "in:sent",
     userId: "me"
   };
@@ -48,6 +53,12 @@ function parseArgs(argv) {
       continue;
     }
 
+    if (current === "--checkpoint" && next) {
+      options.checkpoint = path.resolve(ROOT, next);
+      index += 1;
+      continue;
+    }
+
     if (current === "--user" && next) {
       options.userId = next;
       index += 1;
@@ -72,6 +83,7 @@ Options:
   --credentials <path>   OAuth client credentials JSON. Default: ./credentials.json
   --token <path>         Saved OAuth token JSON. Default: ./token.json
   --output <path>        Output JSON path. Default: ./sent_emails_all_years.json
+  --checkpoint <path>    Resume checkpoint JSON. Default: ./.gmail_export_checkpoint.json
   --query <gmail query>  Gmail search query. Default: "in:sent"
   --user <email|me>      Gmail user id. Default: me
 
@@ -83,6 +95,65 @@ Setup:
 `);
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function getErrorText(error) {
+  if (!error) {
+    return "";
+  }
+
+  if (error.response?.data?.error?.message) {
+    return String(error.response.data.error.message);
+  }
+
+  if (error.message) {
+    return String(error.message);
+  }
+
+  return String(error);
+}
+
+function isRetryableError(error) {
+  const status = error?.response?.status;
+  const message = getErrorText(error).toLowerCase();
+
+  return (
+    status === 429 ||
+    status === 500 ||
+    status === 502 ||
+    status === 503 ||
+    status === 504 ||
+    message.includes("quota exceeded") ||
+    message.includes("user-rate limit exceeded") ||
+    message.includes("rate limit exceeded") ||
+    message.includes("login required")
+  );
+}
+
+async function withRetry(action, label) {
+  let attempt = 0;
+
+  while (true) {
+    try {
+      return await action();
+    } catch (error) {
+      attempt += 1;
+
+      if (!isRetryableError(error) || attempt > MAX_RETRIES) {
+        throw error;
+      }
+
+      const delayMs = Math.min(30000, 1000 * (2 ** (attempt - 1))) + Math.floor(Math.random() * 250);
+      console.log(`${label} hit a temporary Gmail limit. Retry ${attempt}/${MAX_RETRIES} in ${delayMs}ms.`);
+      await sleep(delayMs);
+    }
+  }
+}
+
 async function fileExists(filePath) {
   try {
     await fs.access(filePath);
@@ -90,6 +161,19 @@ async function fileExists(filePath) {
   } catch {
     return false;
   }
+}
+
+async function readJsonIfExists(filePath) {
+  if (!(await fileExists(filePath))) {
+    return null;
+  }
+
+  const content = await fs.readFile(filePath, "utf8");
+  return JSON.parse(content);
+}
+
+async function writeJson(filePath, payload) {
+  await fs.writeFile(filePath, `${JSON.stringify(payload, null, 2)}\n`);
 }
 
 async function loadSavedCredentialsIfExist(tokenPath, credentialsPath) {
@@ -166,17 +250,21 @@ async function listAllMessageIds(gmail, userId, query) {
   let pageToken;
 
   do {
-    const response = await gmail.users.messages.list({
-      userId,
-      q: query,
-      maxResults: 500,
-      pageToken
-    });
+    const response = await withRetry(
+      () => gmail.users.messages.list({
+        userId,
+        q: query,
+        maxResults: 500,
+        pageToken
+      }),
+      "Listing messages"
+    );
 
     const pageIds = (response.data.messages || []).map((message) => message.id).filter(Boolean);
     ids.push(...pageIds);
     pageToken = response.data.nextPageToken || undefined;
     process.stdout.write(`Listed ${ids.length} message ids...\r`);
+    await sleep(REQUEST_DELAY_MS);
   } while (pageToken);
 
   process.stdout.write("\n");
@@ -197,12 +285,15 @@ function extractAddresses(headerValue) {
 }
 
 async function fetchMessageRecord(gmail, userId, id) {
-  const response = await gmail.users.messages.get({
-    userId,
-    id,
-    format: "metadata",
-    metadataHeaders: ["To", "Date"]
-  });
+  const response = await withRetry(
+    () => gmail.users.messages.get({
+      userId,
+      id,
+      format: "metadata",
+      metadataHeaders: ["To", "Date"]
+    }),
+    `Fetching message ${id}`
+  );
 
   const headers = response.data.payload?.headers || [];
   const toHeader = headers.find((header) => header.name?.toLowerCase() === "to")?.value || "";
@@ -244,6 +335,7 @@ async function mapWithConcurrency(items, limit, worker) {
       const currentIndex = nextIndex;
       nextIndex += 1;
       results[currentIndex] = await worker(items[currentIndex], currentIndex);
+      await sleep(REQUEST_DELAY_MS);
     }
   }
 
@@ -265,10 +357,35 @@ function uniqueSortedMessages(messages) {
   return [...unique.values()].sort((a, b) => new Date(a.date) - new Date(b.date));
 }
 
-async function buildExport(gmail, userId, query) {
+async function loadCheckpoint(checkpointPath, expectedQuery) {
+  const checkpoint = await readJsonIfExists(checkpointPath);
+  if (!checkpoint) {
+    return null;
+  }
+
+  if (checkpoint.query !== expectedQuery) {
+    console.log(`Ignoring checkpoint because query changed: ${checkpoint.query} -> ${expectedQuery}`);
+    return null;
+  }
+
+  return checkpoint;
+}
+
+async function saveCheckpoint(checkpointPath, payload) {
+  await writeJson(checkpointPath, payload);
+}
+
+async function removeCheckpoint(checkpointPath) {
+  if (await fileExists(checkpointPath)) {
+    await fs.unlink(checkpointPath);
+  }
+}
+
+async function buildExport(gmail, userId, query, checkpointPath) {
   const profile = await gmail.users.getProfile({ userId });
   const emailAddress = profile.data.emailAddress || userId;
-  const messageIds = await listAllMessageIds(gmail, userId, query);
+  const checkpoint = await loadCheckpoint(checkpointPath, query);
+  const messageIds = checkpoint?.messageIds || await listAllMessageIds(gmail, userId, query);
 
   if (!messageIds.length) {
     return {
@@ -282,18 +399,54 @@ async function buildExport(gmail, userId, query) {
     };
   }
 
-  let completed = 0;
-  const messages = await mapWithConcurrency(messageIds, CONCURRENCY, async (id) => {
-    const record = await fetchMessageRecord(gmail, userId, id);
-    completed += 1;
-    if (completed % 25 === 0 || completed === messageIds.length) {
-      process.stdout.write(`Fetched ${completed}/${messageIds.length} messages...\r`);
+  const records = checkpoint?.records || {};
+  let completed = Object.keys(records).length;
+  let startIndex = checkpoint?.nextIndex || 0;
+
+  if (checkpoint) {
+    console.log(`Resuming from checkpoint at message ${startIndex + 1}/${messageIds.length}.`);
+  } else {
+    await saveCheckpoint(checkpointPath, {
+      query,
+      userId,
+      messageIds,
+      nextIndex: 0,
+      records: {}
+    });
+  }
+
+  while (startIndex < messageIds.length) {
+    const batchIds = messageIds.slice(startIndex, startIndex + CONCURRENCY);
+    const batchRecords = await Promise.all(
+      batchIds.map((id) => fetchMessageRecord(gmail, userId, id))
+    );
+
+    batchIds.forEach((id, index) => {
+      records[id] = batchRecords[index];
+    });
+
+    completed += batchIds.length;
+    startIndex += batchIds.length;
+
+    if (completed % CHECKPOINT_EVERY === 0 || startIndex >= messageIds.length) {
+      await saveCheckpoint(checkpointPath, {
+        query,
+        userId,
+        messageIds,
+        nextIndex: startIndex,
+        records
+      });
     }
-    return record;
-  });
+
+    process.stdout.write(`Fetched ${completed}/${messageIds.length} messages...\r`);
+    await sleep(REQUEST_DELAY_MS);
+  }
   process.stdout.write("\n");
 
+  const messages = Object.values(records);
   const normalized = uniqueSortedMessages(messages);
+
+  await removeCheckpoint(checkpointPath);
 
   return {
     description: `Email inviate da ${emailAddress}`,
@@ -318,11 +471,12 @@ async function main() {
   console.log(`Using credentials: ${options.credentials}`);
   console.log(`Token cache: ${options.token}`);
   console.log(`Output file: ${options.output}`);
+  console.log(`Checkpoint file: ${options.checkpoint}`);
   console.log(`Gmail query: ${options.query}`);
 
   const auth = await authorize(options.credentials, options.token);
   const gmail = google.gmail({ version: "v1", auth });
-  const exported = await buildExport(gmail, options.userId, options.query);
+  const exported = await buildExport(gmail, options.userId, options.query, options.checkpoint);
 
   await fs.writeFile(options.output, `${JSON.stringify(exported, null, 2)}\n`);
 

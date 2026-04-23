@@ -1,0 +1,14 @@
+{
+  "name": "mail-inviate",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local Gmail export tools for sent email analytics",
+  "scripts": {
+    "export:sent": "node scripts/export_sent_emails.mjs"
+  },
+  "dependencies": {
+    "@google-cloud/local-auth": "^3.0.1",
+    "googleapis": "^154.1.0"
+  }
+}

@@ -1,5 +1,7 @@
 # Mail Inviate
 
+![Logo](logo.png)
+
 Dashboard locale e script Gmail API per analizzare le email inviate e generare un dataset JSON compatibile con la pagina HTML.
 
 ## Cosa contiene

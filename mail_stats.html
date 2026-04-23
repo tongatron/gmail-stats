@@ -7,7 +7,7 @@
   <style>
     :root {
       --bg: #f3f1ec;
-      --panel: #fbfaf7;
+      --panel: #ffffff;
       --panel-2: #f0ede6;
       --text: #141414;
       --muted: #5e5a52;
@@ -109,12 +109,72 @@
       line-height: 1;
     }
 
-    .lead {
-      margin: 12px 0 0;
-      max-width: 48ch;
+    .hero-logo {
+      display: block;
+      margin: 0 auto;
+      width: min(100%, 1000px);
+      max-height: 400px;
+      object-fit: contain;
+      object-position: center;
+    }
+
+    .hero-desc {
+      margin: 14px auto 0;
+      max-width: 680px;
+      text-align: center;
       color: var(--muted);
-      line-height: 1.45;
-      font-size: 0.94rem;
+    }
+
+    .site-header {
+      padding: 28px 20px;
+      text-align: center;
+    }
+
+    .loader-section {
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .loader-section .actions {
+      justify-content: center;
+      margin-top: 0;
+    }
+
+    .loader-section .file-label {
+      background: #16a34a;
+      border-color: #16a34a;
+      color: #ffffff;
+      border-radius: 999px;
+      padding: 12px 22px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+      transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+    }
+
+    .loader-section .file-label:hover {
+      background: #15803d;
+      border-color: #15803d;
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 8px 18px rgba(22, 163, 74, 0.35);
+    }
+
+    .loader-section .file-label:active {
+      transform: translateY(0) scale(0.99);
+    }
+
+    .loader-title {
+      margin: 0 0 6px;
+      font-size: 1rem;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .loader-note {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
     }
 
     .actions {
@@ -537,28 +597,18 @@
 </head>
 <body>
   <main class="page">
-    <section class="hero">
-      <div class="hero-main">
-        <div class="eyebrow">Analisi produttivita mail</div>
-        <h1>Orari di invio e destinatari, senza rumore.</h1>
-        <p class="lead">
-          Dashboard locale per leggere i tuoi ritmi di invio in modo netto. Puoi filtrare per anno,
-          escludere singoli destinatari o interi domini e rigenerare subito tutti i grafici.
-        </p>
-        <div class="actions">
-          <label class="file-label" for="fileInput">Apri file JSON</label>
-          <input id="fileInput" type="file" accept=".json,application/json">
-        </div>
-      </div>
+    <header class="site-header panel">
+      <img class="hero-logo" src="./logo.png" alt="Logo del progetto">
+      <p class="hero-desc">Dashboard locale per analizzare le email inviate: orari, heatmap settimanale, destinatari e domini, con filtri per anno ed export CSV.</p>
+    </header>
 
-      <aside class="hero-side">
-        <div class="status-label">Stato dataset</div>
-        <div class="status-value" id="statusTitle">In attesa del file</div>
-        <div class="status-note" id="statusText">
-          Provo a leggere automaticamente `sent_emails.json` dalla stessa cartella. Se apri la pagina
-          direttamente dal browser e il file non viene letto, usa il caricamento manuale.
-        </div>
-      </aside>
+    <section class="loader-section panel">
+      <div class="actions">
+        <label class="file-label" for="fileInput">Apri file JSON</label>
+        <input id="fileInput" type="file" accept=".json,application/json">
+      </div>
+      <div id="statusTitle" hidden></div>
+      <div id="statusText" hidden></div>
     </section>
 
     <section class="grid" id="dashboard" aria-live="polite">

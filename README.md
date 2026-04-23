@@ -40,10 +40,10 @@ Questi file devono restare solo in locale e sono esclusi da git:
 9. Rinominalo in `credentials.json`.
 10. Mettilo nella cartella del progetto.
 
-Percorso atteso:
+Posizione attesa nel progetto:
 
 ```bash
-/Users/tonga/Downloads/mail-inviate/credentials.json
+./credentials.json
 ```
 
 ## Installazione

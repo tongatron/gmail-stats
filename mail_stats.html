@@ -70,7 +70,7 @@
 
     .hero-main,
     .hero-side {
-      padding: 24px;
+      padding: 18px 20px;
     }
 
     .hero-main {
@@ -98,10 +98,10 @@
     }
 
     h1 {
-      font-size: clamp(2.2rem, 5vw, 4rem);
-      line-height: 0.95;
-      margin-top: 14px;
-      max-width: 10ch;
+      font-size: clamp(1.8rem, 4vw, 3.2rem);
+      line-height: 0.9;
+      margin-top: 12px;
+      max-width: 9ch;
     }
 
     h2 {
@@ -110,18 +110,18 @@
     }
 
     .lead {
-      margin: 16px 0 0;
-      max-width: 58ch;
+      margin: 12px 0 0;
+      max-width: 48ch;
       color: var(--muted);
-      line-height: 1.55;
-      font-size: 1rem;
+      line-height: 1.45;
+      font-size: 0.94rem;
     }
 
     .actions {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-top: 18px;
+      margin-top: 14px;
     }
 
     .button,
@@ -181,17 +181,17 @@
     }
 
     .status-value {
-      margin-top: 10px;
-      font-size: 1.7rem;
+      margin-top: 8px;
+      font-size: 1.25rem;
       line-height: 1.05;
       font-family: "Times New Roman", Times, serif;
     }
 
     .status-note {
-      margin-top: 10px;
+      margin-top: 8px;
       color: var(--muted);
-      line-height: 1.5;
-      font-size: 0.96rem;
+      line-height: 1.4;
+      font-size: 0.9rem;
     }
 
     .grid {
@@ -546,8 +546,7 @@
           escludere singoli destinatari o interi domini e rigenerare subito tutti i grafici.
         </p>
         <div class="actions">
-          <button class="button primary" id="reloadButton" type="button">Ricarica `sent_emails.json`</button>
-          <label class="file-label" for="fileInput">Apri un altro JSON</label>
+          <label class="file-label" for="fileInput">Apri file JSON</label>
           <input id="fileInput" type="file" accept=".json,application/json">
         </div>
       </div>
@@ -633,12 +632,18 @@
           <div class="hint" id="filterHint">
             Nessun filtro attivo.
           </div>
+          <div class="filter-actions" style="grid-column: 1 / -1; margin-top: 4px;">
+            <button class="button ghost" id="exportCsv" type="button">Esporta CSV</button>
+          </div>
         </div>
       </article>
 
       <article class="panel full">
-        <h2>Calore settimanale</h2>
-        <div class="subheading">
+        <div class="selection-title">
+          <h2>Calore settimanale</h2>
+          <select class="select" id="heatmapYearSelect" style="max-width: 220px;"></select>
+        </div>
+        <div class="subheading" id="heatmapSubheading">
           Giorno della settimana per ora del giorno. Clicca una cella per vedere i destinatari delle
           mail inviate in quella specifica fascia.
         </div>
@@ -716,6 +721,7 @@
         from: "",
         to: ""
       },
+      heatmapYear: "",
       exclusions: {
         recipients: new Set(),
         domains: new Set()
@@ -737,6 +743,19 @@
         day: "2-digit",
         month: "short",
         year: "numeric"
+      }),
+      csvParts: new Intl.DateTimeFormat("it-IT", {
+        timeZone: TIMEZONE,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23"
+      }),
+      weekdayIt: new Intl.DateTimeFormat("it-IT", {
+        timeZone: TIMEZONE,
+        weekday: "long"
       }),
       monthYear: new Intl.DateTimeFormat("it-IT", {
         timeZone: TIMEZONE,
@@ -766,15 +785,17 @@
       addRecipientExclusion: document.getElementById("addRecipientExclusion"),
       addDomainExclusion: document.getElementById("addDomainExclusion"),
       addManualFilter: document.getElementById("addManualFilter"),
+      exportCsv: document.getElementById("exportCsv"),
       clearFilters: document.getElementById("clearFilters"),
+      heatmapYearSelect: document.getElementById("heatmapYearSelect"),
+      heatmapSubheading: document.getElementById("heatmapSubheading"),
       heatmap: document.getElementById("heatmap"),
       selectionMeta: document.getElementById("selectionMeta"),
       selectionList: document.getElementById("selectionList"),
       hourChart: document.getElementById("hourChart"),
       recipientList: document.getElementById("recipientList"),
       domainList: document.getElementById("domainList"),
-      fileInput: document.getElementById("fileInput"),
-      reloadButton: document.getElementById("reloadButton")
+      fileInput: document.getElementById("fileInput")
     };
 
     function setStatus(title, text) {
@@ -899,6 +920,73 @@
           .map(([label, count]) => ({ label, count }))
           .sort((a, b) => b.count - a.count)
       };
+    }
+
+    function csvEscape(value) {
+      const normalized = String(value ?? "");
+      if (normalized.includes(",") || normalized.includes('"') || normalized.includes("\n")) {
+        return `"${normalized.replaceAll('"', '""')}"`;
+      }
+      return normalized;
+    }
+
+    function buildCsv(entries) {
+      const header = [
+        "date_iso",
+        "date_local_it",
+        "year",
+        "month",
+        "day",
+        "hour_rome",
+        "weekday_rome",
+        "recipients_count",
+        "recipients",
+        "domains"
+      ];
+
+      const rows = entries.map((entry) => {
+        const localParts = formatters.csvParts.formatToParts(entry.date);
+        const localDate = `${partValue(localParts, "day")}/${partValue(localParts, "month")}/${partValue(localParts, "year")} ${partValue(localParts, "hour")}:${partValue(localParts, "minute")}`;
+        const weekday = formatters.weekdayIt.format(entry.date);
+
+        return [
+          entry.date.toISOString(),
+          localDate,
+          entry.year,
+          partValue(localParts, "month"),
+          partValue(localParts, "day"),
+          entry.hour,
+          weekday,
+          entry.recipients.length,
+          entry.recipients.join(" | "),
+          entry.domains.join(" | ")
+        ].map(csvEscape).join(",");
+      });
+
+      return [header.join(","), ...rows].join("\n");
+    }
+
+    function partValue(parts, type) {
+      return parts.find((item) => item.type === type)?.value || "";
+    }
+
+    function downloadCsv(entries) {
+      if (!entries.length) {
+        setStatus("Nessun dato da esportare", "Applica meno filtri oppure carica un dataset con almeno una email.");
+        return;
+      }
+
+      const csv = buildCsv(entries);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const dateStamp = new Date().toISOString().slice(0, 10);
+      link.href = url;
+      link.download = `mail_export_${dateStamp}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
     }
 
     function computeStats(entries) {
@@ -1069,6 +1157,27 @@
       });
     }
 
+    function renderHeatmapYearControl(filteredEntries) {
+      const filteredYears = [...new Set(filteredEntries.map((entry) => entry.year))].sort((a, b) => a - b);
+
+      if (state.heatmapYear && !filteredYears.includes(Number(state.heatmapYear))) {
+        state.heatmapYear = "";
+      }
+
+      els.heatmapYearSelect.innerHTML = [
+        '<option value="">Tutti gli anni filtrati</option>',
+        ...filteredYears.map((year) => `<option value="${year}">${year}</option>`)
+      ].join("");
+
+      els.heatmapYearSelect.value = state.heatmapYear;
+
+      if (state.heatmapYear) {
+        els.heatmapSubheading.textContent = `Giorno della settimana per ora del giorno, limitato all'anno ${state.heatmapYear}. Clicca una cella per vedere i destinatari di quella fascia.`;
+      } else {
+        els.heatmapSubheading.textContent = "Giorno della settimana per ora del giorno. Clicca una cella per vedere i destinatari delle mail inviate in quella specifica fascia.";
+      }
+    }
+
     function renderHourChart(hourlyCounts) {
       els.hourChart.innerHTML = "";
       const max = Math.max(...hourlyCounts, 1);
@@ -1092,10 +1201,11 @@
       });
     }
 
-    function renderSelectionDetails(dayIndex, hour, entries) {
+    function renderSelectionDetails(dayIndex, hour, entries, yearLabel = "") {
       const dayLabel = DAY_LABELS[DAY_KEYS[dayIndex]];
       const hourLabel = `${String(hour).padStart(2, "0")}:00`;
-      els.selectionMeta.textContent = `${dayLabel}, fascia ${hourLabel} - ${entries.length} email`;
+      const suffix = yearLabel ? ` | ${yearLabel}` : "";
+      els.selectionMeta.textContent = `${dayLabel}, fascia ${hourLabel} - ${entries.length} email${suffix}`;
 
       if (!entries.length) {
         els.selectionList.innerHTML = '<div class="empty">In questa fascia non risultano email inviate.</div>';
@@ -1148,7 +1258,7 @@
       els.selectionList.innerHTML = topRows + recentRows;
     }
 
-    function renderHeatmap(matrix, details, defaultSelection) {
+    function renderHeatmap(matrix, details, defaultSelection, yearLabel = "") {
       els.heatmap.innerHTML = "";
       const max = Math.max(...matrix.flat(), 1);
 
@@ -1182,7 +1292,7 @@
           cell.addEventListener("click", () => {
             els.heatmap.querySelectorAll(".heat-cell.active").forEach((item) => item.classList.remove("active"));
             cell.classList.add("active");
-            renderSelectionDetails(rowIndex, hour, details[rowIndex][hour]);
+            renderSelectionDetails(rowIndex, hour, details[rowIndex][hour], yearLabel);
           });
 
           if (defaultSelection.day === rowIndex && defaultSelection.hour === hour) {
@@ -1193,7 +1303,7 @@
         });
       });
 
-      renderSelectionDetails(defaultSelection.day, defaultSelection.hour, details[defaultSelection.day][defaultSelection.hour]);
+      renderSelectionDetails(defaultSelection.day, defaultSelection.hour, details[defaultSelection.day][defaultSelection.hour], yearLabel);
     }
 
     function renderRecipients(recipients) {
@@ -1245,6 +1355,7 @@
       renderFilterControls();
 
       const filteredEntries = getFilteredEntries();
+      renderHeatmapYearControl(filteredEntries);
       const stats = computeStats(filteredEntries);
 
       if (!stats.totalEmails) {
@@ -1266,11 +1377,17 @@
         return;
       }
 
+      const heatmapEntries = state.heatmapYear
+        ? filteredEntries.filter((entry) => entry.year === Number(state.heatmapYear))
+        : filteredEntries;
+      const heatmapStats = computeStats(heatmapEntries);
+      const heatmapYearLabel = state.heatmapYear ? `anno ${state.heatmapYear}` : "tutti gli anni filtrati";
+
       renderMetrics(stats);
-      renderHeatmap(stats.heatmap, stats.heatmapDetails, {
-        day: stats.peakDay.index,
-        hour: stats.peakHour.hour
-      });
+      renderHeatmap(heatmapStats.heatmap, heatmapStats.heatmapDetails, {
+        day: heatmapStats.peakDay.index,
+        hour: heatmapStats.peakHour.hour
+      }, heatmapYearLabel);
       renderHourChart(stats.hourlyCounts);
       renderRecipients(stats.recipients);
       renderDomains(stats.domains);
@@ -1355,6 +1472,10 @@
       addExclusion(kind, value);
     });
 
+    els.exportCsv.addEventListener("click", () => {
+      downloadCsv(getFilteredEntries());
+    });
+
     els.yearFromSelect.addEventListener("change", () => {
       state.yearRange.from = els.yearFromSelect.value;
       if (
@@ -1379,9 +1500,15 @@
       refreshDashboard();
     });
 
+    els.heatmapYearSelect.addEventListener("change", () => {
+      state.heatmapYear = els.heatmapYearSelect.value;
+      refreshDashboard();
+    });
+
     els.clearFilters.addEventListener("click", () => {
       state.yearRange.from = "";
       state.yearRange.to = "";
+      state.heatmapYear = "";
       state.exclusions.recipients.clear();
       state.exclusions.domains.clear();
       refreshDashboard();
@@ -1398,20 +1525,13 @@
         const raw = JSON.parse(text);
         state.yearRange.from = "";
         state.yearRange.to = "";
+        state.heatmapYear = "";
         state.exclusions.recipients.clear();
         state.exclusions.domains.clear();
         applyData(raw);
       } catch (error) {
         setStatus("File non valido", "Non sono riuscito a leggere questo JSON. Controlla che il file sia corretto.");
       }
-    });
-
-    els.reloadButton.addEventListener("click", () => {
-      state.yearRange.from = "";
-      state.yearRange.to = "";
-      state.exclusions.recipients.clear();
-      state.exclusions.domains.clear();
-      loadDefaultFile();
     });
 
     loadDefaultFile();

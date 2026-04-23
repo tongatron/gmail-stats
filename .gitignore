@@ -2,4 +2,7 @@ node_modules/
 token.json
 credentials.json
 .gmail_export_checkpoint.json
+sent_emails.json
+sent_emails_all_years.json
+.csv
 .DS_Store

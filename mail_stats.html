@@ -13,9 +13,9 @@
       --muted: #5e5a52;
       --line: #d7d2c8;
       --line-strong: #999180;
-      --accent: #1f5f52;
-      --accent-2: #b05731;
-      --accent-soft: #dbe8e4;
+      --accent: #1a73e8;
+      --accent-2: #ea4335;
+      --accent-soft: #e3efff;
       --warning-soft: #efe1d9;
       --shadow: 0 12px 24px rgba(20, 20, 20, 0.05);
       --radius: 0px;
@@ -144,8 +144,9 @@
       background: #16a34a;
       border-color: #16a34a;
       color: #ffffff;
-      border-radius: 999px;
-      padding: 12px 22px;
+      border-radius: 6px;
+      padding: 16px 32px;
+      font-size: 1.05rem;
       font-weight: 600;
       letter-spacing: 0.02em;
       box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
@@ -514,7 +515,7 @@
       min-height: 8px;
       border: 1px solid rgba(20, 20, 20, 0.14);
       border-radius: 0;
-      background: linear-gradient(180deg, #cad9d5 0%, #5f8f84 100%);
+      background: linear-gradient(180deg, #cfe0fb 0%, #1a73e8 100%);
       position: relative;
     }
 
@@ -639,7 +640,7 @@
       <article class="panel full">
         <h2>Filtri</h2>
         <div class="subheading">
-          Filtra per anno e, se vuoi, escludi singoli indirizzi o interi domini. Tutte le metriche,
+          Filtra per anno e, se vuoi, includi o escludi singoli indirizzi o interi domini. Tutte le metriche,
           il calore settimanale e gli elenchi vengono ricalcolati coerentemente sulla selezione attiva.
         </div>
         <div class="filter-panel">
@@ -651,6 +652,22 @@
           <div class="filter-block">
             <label for="yearToSelect">Anno a</label>
             <select class="select" id="yearToSelect"></select>
+          </div>
+
+          <div class="filter-block">
+            <label for="recipientIncludeSelect">Includi destinatario</label>
+            <select class="select" id="recipientIncludeSelect"></select>
+            <div class="filter-actions">
+              <button class="button ghost" id="addRecipientInclusion" type="button">Includi destinatario</button>
+            </div>
+          </div>
+
+          <div class="filter-block">
+            <label for="domainIncludeSelect">Includi dominio</label>
+            <select class="select" id="domainIncludeSelect"></select>
+            <div class="filter-actions">
+              <button class="button ghost" id="addDomainInclusion" type="button">Includi dominio</button>
+            </div>
           </div>
 
           <div class="filter-block">
@@ -673,7 +690,8 @@
             <label for="manualFilter">Aggiunta manuale</label>
             <input class="input" id="manualFilter" type="text" placeholder="es. nome@dominio.it oppure dominio.it">
             <div class="filter-actions">
-              <button class="button ghost" id="addManualFilter" type="button">Aggiungi filtro</button>
+              <button class="button ghost" id="addManualInclude" type="button">Includi</button>
+              <button class="button ghost" id="addManualFilter" type="button">Escludi</button>
               <button class="button ghost" id="clearFilters" type="button">Azzera filtri</button>
             </div>
           </div>
@@ -744,7 +762,8 @@
 
     <p class="footer-note">
       Nota: le date vengono lette dal JSON e convertite nel fuso `Europe/Rome` per una lettura piu realistica
-      dei tuoi orari di produttivita. Quando applichi un filtro, l'email viene esclusa se contiene almeno un
+      dei tuoi orari di produttivita. Con i filtri di inclusione rimangono solo le email che contengono almeno un
+      destinatario o dominio incluso; con i filtri di esclusione, l'email viene scartata se contiene almeno un
       destinatario o dominio escluso.
     </p>
   </main>
@@ -772,6 +791,10 @@
         to: ""
       },
       heatmapYear: "",
+      inclusions: {
+        recipients: new Set(),
+        domains: new Set()
+      },
       exclusions: {
         recipients: new Set(),
         domains: new Set()
@@ -827,13 +850,18 @@
       metricRecipientsDetail: document.getElementById("metricRecipientsDetail"),
       yearFromSelect: document.getElementById("yearFromSelect"),
       yearToSelect: document.getElementById("yearToSelect"),
+      recipientIncludeSelect: document.getElementById("recipientIncludeSelect"),
+      domainIncludeSelect: document.getElementById("domainIncludeSelect"),
       recipientSelect: document.getElementById("recipientSelect"),
       domainSelect: document.getElementById("domainSelect"),
       manualFilter: document.getElementById("manualFilter"),
       activeFilters: document.getElementById("activeFilters"),
       filterHint: document.getElementById("filterHint"),
+      addRecipientInclusion: document.getElementById("addRecipientInclusion"),
+      addDomainInclusion: document.getElementById("addDomainInclusion"),
       addRecipientExclusion: document.getElementById("addRecipientExclusion"),
       addDomainExclusion: document.getElementById("addDomainExclusion"),
+      addManualInclude: document.getElementById("addManualInclude"),
       addManualFilter: document.getElementById("addManualFilter"),
       exportCsv: document.getElementById("exportCsv"),
       clearFilters: document.getElementById("clearFilters"),
@@ -929,11 +957,34 @@
       return recipientMatch || domainMatch;
     }
 
+    function isIncluded(entry) {
+      const hasInclusions =
+        state.inclusions.recipients.size > 0 || state.inclusions.domains.size > 0;
+
+      if (!hasInclusions) {
+        return true;
+      }
+
+      const recipientMatch = entry.recipients.some((recipient) =>
+        state.inclusions.recipients.has(recipient.toLowerCase())
+      );
+
+      const domainMatch = entry.domains.some((domain) =>
+        state.inclusions.domains.has(domain.toLowerCase())
+      );
+
+      return recipientMatch || domainMatch;
+    }
+
     function getFilteredEntries() {
       const fromYear = state.yearRange.from ? Number(state.yearRange.from) : null;
       const toYear = state.yearRange.to ? Number(state.yearRange.to) : null;
 
       return state.allEntries.filter((entry) => {
+        if (!isIncluded(entry)) {
+          return false;
+        }
+
         if (isExcluded(entry)) {
           return false;
         }
@@ -1138,14 +1189,16 @@
       els.metricRecipients.textContent = String(stats.totalRecipients);
       els.metricRecipientsDetail.textContent = `${stats.averageRecipientsPerEmail.toFixed(2)} destinatari medi per email`;
 
-      const filterCount = state.exclusions.recipients.size + state.exclusions.domains.size;
+      const inclusionCount = state.inclusions.recipients.size + state.inclusions.domains.size;
+      const exclusionCount = state.exclusions.recipients.size + state.exclusions.domains.size;
       const yearLabel = state.yearRange.from || state.yearRange.to
         ? ` Anni selezionati: ${state.yearRange.from || stats.firstDate?.getUTCFullYear() || "-"}-${state.yearRange.to || stats.lastDate?.getUTCFullYear() || "-"}.`
         : "";
-      const filterLabel = filterCount ? ` Filtri attivi: ${filterCount}.` : "";
+      const inclusionLabel = inclusionCount ? ` Inclusioni attive: ${inclusionCount}.` : "";
+      const exclusionLabel = exclusionCount ? ` Esclusioni attive: ${exclusionCount}.` : "";
       setStatus(
         `Dataset caricato: ${stats.totalEmails} email`,
-        `Periodo analizzato: ${periodText}. Fuso usato: ${TIMEZONE}.${yearLabel}${filterLabel}`
+        `Periodo analizzato: ${periodText}. Fuso usato: ${TIMEZONE}.${yearLabel}${inclusionLabel}${exclusionLabel}`
       );
     }
 
@@ -1161,12 +1214,32 @@
       els.yearFromSelect.value = state.yearRange.from;
       els.yearToSelect.value = state.yearRange.to;
 
+      const recipientInclusionOptions = catalog.recipients
+        .filter((item) => !state.inclusions.recipients.has(item.label.toLowerCase()))
+        .slice(0, 200);
+      const domainInclusionOptions = catalog.domains
+        .filter((item) => !state.inclusions.domains.has(item.label.toLowerCase()))
+        .slice(0, 200);
       const recipientOptions = catalog.recipients
         .filter((item) => !state.exclusions.recipients.has(item.label.toLowerCase()))
         .slice(0, 200);
       const domainOptions = catalog.domains
         .filter((item) => !state.exclusions.domains.has(item.label.toLowerCase()))
         .slice(0, 200);
+
+      els.recipientIncludeSelect.innerHTML = [
+        '<option value="">Seleziona un destinatario</option>',
+        ...recipientInclusionOptions.map((item) =>
+          `<option value="${escapeHtml(item.label)}">${escapeHtml(item.label)} (${item.count})</option>`
+        )
+      ].join("");
+
+      els.domainIncludeSelect.innerHTML = [
+        '<option value="">Seleziona un dominio</option>',
+        ...domainInclusionOptions.map((item) =>
+          `<option value="${escapeHtml(item.label)}">${escapeHtml(item.label)} (${item.count})</option>`
+        )
+      ].join("");
 
       els.recipientSelect.innerHTML = [
         '<option value="">Seleziona un destinatario</option>',
@@ -1188,16 +1261,24 @@
         const toText = state.yearRange.to || state.availableYears[state.availableYears.length - 1];
         chips.push(`<span class="chip">anni: ${escapeHtml(String(fromText))} - ${escapeHtml(String(toText))} <button type="button" data-kind="years" data-value="range">rimuovi</button></span>`);
       }
+      for (const recipient of state.inclusions.recipients) {
+        chips.push(`<span class="chip">includi mail: ${escapeHtml(recipient)} <button type="button" data-kind="included-recipient" data-value="${escapeHtml(recipient)}">rimuovi</button></span>`);
+      }
+      for (const domain of state.inclusions.domains) {
+        chips.push(`<span class="chip">includi dominio: ${escapeHtml(domain)} <button type="button" data-kind="included-domain" data-value="${escapeHtml(domain)}">rimuovi</button></span>`);
+      }
       for (const recipient of state.exclusions.recipients) {
-        chips.push(`<span class="chip">mail: ${escapeHtml(recipient)} <button type="button" data-kind="recipient" data-value="${escapeHtml(recipient)}">rimuovi</button></span>`);
+        chips.push(`<span class="chip">escludi mail: ${escapeHtml(recipient)} <button type="button" data-kind="recipient" data-value="${escapeHtml(recipient)}">rimuovi</button></span>`);
       }
       for (const domain of state.exclusions.domains) {
-        chips.push(`<span class="chip">dominio: ${escapeHtml(domain)} <button type="button" data-kind="domain" data-value="${escapeHtml(domain)}">rimuovi</button></span>`);
+        chips.push(`<span class="chip">escludi dominio: ${escapeHtml(domain)} <button type="button" data-kind="domain" data-value="${escapeHtml(domain)}">rimuovi</button></span>`);
       }
 
       els.activeFilters.innerHTML = chips.join("");
+      const inclusionCount = state.inclusions.recipients.size + state.inclusions.domains.size;
+      const exclusionCount = state.exclusions.recipients.size + state.exclusions.domains.size;
       els.filterHint.textContent = chips.length
-        ? `${chips.length} filtri attivi. L'analisi usa solo le email rimaste dopo l'esclusione.`
+        ? `${chips.length} filtri attivi. Inclusioni: ${inclusionCount}. Esclusioni: ${exclusionCount}.`
         : "Nessun filtro attivo.";
 
       els.activeFilters.querySelectorAll("button").forEach((button) => {
@@ -1336,7 +1417,7 @@
           const lightness = 96 - intensity * 38;
           cell.type = "button";
           cell.className = "heat-cell";
-          cell.style.background = `hsl(160 22% ${lightness}%)`;
+          cell.style.background = `hsl(214 82% ${lightness}%)`;
           cell.title = `${DAY_NAMES[rowIndex]} ${String(hour).padStart(2, "0")}:00 - ${count} email`;
           cell.setAttribute("aria-label", `${DAY_LABELS[DAY_KEYS[rowIndex]]} alle ${String(hour).padStart(2, "0")}:00, ${count} email`);
           cell.addEventListener("click", () => {
@@ -1387,7 +1468,7 @@
 
       const max = top[0].count || 1;
       els.domainList.innerHTML = top.map((domain) => `
-        <div class="recipient-row" style="background: linear-gradient(90deg, rgba(31,95,82,${clamp(domain.count / max, 0.14, 0.45)}), #ffffff);">
+        <div class="recipient-row" style="background: linear-gradient(90deg, rgba(26,115,232,${clamp(domain.count / max, 0.14, 0.45)}), #ffffff);">
           <div class="recipient-main">
             <div class="recipient-name">${escapeHtml(domain.domain)}</div>
             <div class="recipient-meta">Dominio ricorrente nel dataset filtrato</div>
@@ -1443,16 +1524,17 @@
       renderDomains(stats.domains);
     }
 
-    function addExclusion(kind, value) {
+    function addFilter(mode, kind, value) {
       const normalized = String(value || "").trim().toLowerCase();
       if (!normalized) {
         return;
       }
 
+      const target = mode === "include" ? state.inclusions : state.exclusions;
       if (kind === "recipient") {
-        state.exclusions.recipients.add(normalized);
+        target.recipients.add(normalized);
       } else if (kind === "domain") {
-        state.exclusions.domains.add(normalized);
+        target.domains.add(normalized);
       }
 
       els.manualFilter.value = "";
@@ -1464,6 +1546,10 @@
       if (kind === "years") {
         state.yearRange.from = "";
         state.yearRange.to = "";
+      } else if (kind === "included-recipient") {
+        state.inclusions.recipients.delete(normalized);
+      } else if (kind === "included-domain") {
+        state.inclusions.domains.delete(normalized);
       } else if (kind === "recipient") {
         state.exclusions.recipients.delete(normalized);
       } else if (kind === "domain") {
@@ -1503,14 +1589,33 @@
       }
     }
 
+    els.addRecipientInclusion.addEventListener("click", () => {
+      addFilter("include", "recipient", els.recipientIncludeSelect.value);
+      els.recipientIncludeSelect.value = "";
+    });
+
+    els.addDomainInclusion.addEventListener("click", () => {
+      addFilter("include", "domain", els.domainIncludeSelect.value);
+      els.domainIncludeSelect.value = "";
+    });
+
     els.addRecipientExclusion.addEventListener("click", () => {
-      addExclusion("recipient", els.recipientSelect.value);
+      addFilter("exclude", "recipient", els.recipientSelect.value);
       els.recipientSelect.value = "";
     });
 
     els.addDomainExclusion.addEventListener("click", () => {
-      addExclusion("domain", els.domainSelect.value);
+      addFilter("exclude", "domain", els.domainSelect.value);
       els.domainSelect.value = "";
+    });
+
+    els.addManualInclude.addEventListener("click", () => {
+      const value = els.manualFilter.value.trim();
+      if (!value) {
+        return;
+      }
+      const kind = value.includes("@") ? "recipient" : "domain";
+      addFilter("include", kind, value);
     });
 
     els.addManualFilter.addEventListener("click", () => {
@@ -1519,7 +1624,7 @@
         return;
       }
       const kind = value.includes("@") ? "recipient" : "domain";
-      addExclusion(kind, value);
+      addFilter("exclude", kind, value);
     });
 
     els.exportCsv.addEventListener("click", () => {
@@ -1559,6 +1664,8 @@
       state.yearRange.from = "";
       state.yearRange.to = "";
       state.heatmapYear = "";
+      state.inclusions.recipients.clear();
+      state.inclusions.domains.clear();
       state.exclusions.recipients.clear();
       state.exclusions.domains.clear();
       refreshDashboard();
@@ -1576,6 +1683,8 @@
         state.yearRange.from = "";
         state.yearRange.to = "";
         state.heatmapYear = "";
+        state.inclusions.recipients.clear();
+        state.inclusions.domains.clear();
         state.exclusions.recipients.clear();
         state.exclusions.domains.clear();
         applyData(raw);

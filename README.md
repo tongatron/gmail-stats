@@ -1,8 +1,8 @@
-# Mail Inviate
+# Gmail Stats
 
 ![Logo](logo.png)
 
-Dashboard locale e script Gmail API per analizzare le email inviate e generare un dataset JSON compatibile con la pagina HTML.
+`gmail-stats` e una dashboard locale con script Gmail API per analizzare le email inviate e generare un dataset JSON compatibile con la pagina HTML.
 
 ## Cosa contiene
 
@@ -102,7 +102,7 @@ La pagina può:
 
 - aprire manualmente un file JSON
 - filtrare per anno o intervallo di anni
-- escludere destinatari o domini
+- includere o escludere destinatari e domini
 - mostrare la heatmap settimanale anche per un anno specifico
 - esportare in CSV i dati attualmente filtrati
 

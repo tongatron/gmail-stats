@@ -6,19 +6,19 @@
   <title>Analisi Mail Inviate</title>
   <style>
     :root {
-      --bg: #f3f1ec;
+      --bg: #f6f8fc;
       --panel: #ffffff;
-      --panel-2: #f0ede6;
-      --text: #141414;
-      --muted: #5e5a52;
-      --line: #d7d2c8;
-      --line-strong: #999180;
+      --panel-2: #f8f9fa;
+      --text: #202124;
+      --muted: #5f6368;
+      --line: #dadce0;
+      --line-strong: #c7cdd1;
       --accent: #1a73e8;
-      --accent-2: #ea4335;
-      --accent-soft: #e3efff;
-      --warning-soft: #efe1d9;
-      --shadow: 0 12px 24px rgba(20, 20, 20, 0.05);
-      --radius: 0px;
+      --accent-2: #d93025;
+      --accent-soft: #e8f0fe;
+      --warning-soft: #fce8e6;
+      --shadow: 0 1px 3px rgba(60, 64, 67, 0.12), 0 4px 8px rgba(60, 64, 67, 0.08);
+      --radius: 24px;
     }
 
     * {
@@ -33,23 +33,17 @@
       margin: 0;
       min-height: 100vh;
       background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent 180px),
-        repeating-linear-gradient(
-          90deg,
-          rgba(20, 20, 20, 0.02) 0,
-          rgba(20, 20, 20, 0.02) 1px,
-          transparent 1px,
-          transparent 36px
-        ),
+        radial-gradient(circle at top left, rgba(26, 115, 232, 0.08), transparent 28%),
+        linear-gradient(180deg, #eef3fd 0%, var(--bg) 220px),
         var(--bg);
       color: var(--text);
-      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-family: "Google Sans", "Roboto", Arial, sans-serif;
     }
 
     .page {
-      width: min(1220px, calc(100% - 32px));
+      width: min(1280px, calc(100% - 32px));
       margin: 0 auto;
-      padding: 24px 0 40px;
+      padding: 24px 0 44px;
     }
 
     .hero,
@@ -80,28 +74,29 @@
     .eyebrow {
       display: inline-block;
       padding: 6px 10px;
-      border: 1px solid var(--line-strong);
-      background: var(--panel-2);
+      border: 1px solid #d2e3fc;
+      background: var(--accent-soft);
       color: var(--muted);
       font-size: 0.76rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
+      border-radius: 999px;
     }
 
     h1,
     h2,
     h3 {
       margin: 0;
-      font-family: "Times New Roman", Times, serif;
-      font-weight: 700;
-      letter-spacing: -0.03em;
+      font-family: "Google Sans", "Roboto", Arial, sans-serif;
+      font-weight: 600;
+      letter-spacing: -0.01em;
     }
 
     h1 {
-      font-size: clamp(1.8rem, 4vw, 3.2rem);
-      line-height: 0.9;
-      margin-top: 12px;
-      max-width: 9ch;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1;
+      margin-top: 8px;
+      max-width: 12ch;
     }
 
     h2 {
@@ -111,23 +106,27 @@
 
     .hero-logo {
       display: block;
-      margin: 0 auto;
-      width: min(100%, 1000px);
-      max-height: 400px;
+      margin: 6px 0 0;
+      width: min(100%, 240px);
+      max-height: 120px;
       object-fit: contain;
-      object-position: center;
+      object-position: left center;
     }
 
     .hero-desc {
-      margin: 14px auto 0;
-      max-width: 680px;
-      text-align: center;
+      margin: 0;
+      max-width: 720px;
+      text-align: left;
       color: var(--muted);
+      font-size: 0.98rem;
+      line-height: 1.55;
     }
 
     .site-header {
-      padding: 28px 20px;
-      text-align: center;
+      padding: 28px 28px 24px;
+      display: grid;
+      gap: 12px;
+      align-items: start;
     }
 
     .loader-section {
@@ -141,23 +140,23 @@
     }
 
     .loader-section .file-label {
-      background: #16a34a;
-      border-color: #16a34a;
+      background: var(--accent);
+      border-color: var(--accent);
       color: #ffffff;
-      border-radius: 6px;
-      padding: 16px 32px;
-      font-size: 1.05rem;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+      border-radius: 999px;
+      padding: 14px 24px;
+      font-size: 0.98rem;
+      font-weight: 500;
+      letter-spacing: 0;
+      box-shadow: none;
       transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
     }
 
     .loader-section .file-label:hover {
-      background: #15803d;
-      border-color: #15803d;
-      transform: translateY(-2px) scale(1.03);
-      box-shadow: 0 8px 18px rgba(22, 163, 74, 0.35);
+      background: #1765cc;
+      border-color: #1765cc;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 12px rgba(26, 115, 232, 0.18);
     }
 
     .loader-section .file-label:active {
@@ -190,8 +189,8 @@
     .select,
     .input {
       appearance: none;
-      border: 1px solid var(--line-strong);
-      border-radius: 0;
+      border: 1px solid var(--line);
+      border-radius: 16px;
       background: #ffffff;
       color: var(--text);
       font: inherit;
@@ -205,35 +204,36 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+      transition: background 140ms ease, color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+      font-weight: 500;
     }
 
     .button:hover,
     .file-label:hover {
-      background: var(--panel-2);
+      background: #f1f3f4;
     }
 
     .button.primary,
     .file-label {
-      background: var(--text);
+      background: var(--accent);
       color: #ffffff;
-      border-color: var(--text);
+      border-color: var(--accent);
     }
 
     .button.primary:hover,
     .file-label:hover {
-      background: var(--accent);
-      border-color: var(--accent);
+      background: #1765cc;
+      border-color: #1765cc;
     }
 
     .button.ghost {
-      background: transparent;
+      background: #ffffff;
     }
 
     .button.dark {
-      background: var(--text);
+      background: #202124;
       color: #ffffff;
-      border-color: var(--text);
+      border-color: #202124;
     }
 
     .button.dark:hover {
@@ -254,9 +254,10 @@
 
     .status-value {
       margin-top: 8px;
-      font-size: 1.25rem;
-      line-height: 1.05;
-      font-family: "Times New Roman", Times, serif;
+      font-size: 1.1rem;
+      line-height: 1.2;
+      font-family: "Google Sans", "Roboto", Arial, sans-serif;
+      font-weight: 600;
     }
 
     .status-note {
@@ -274,8 +275,8 @@
 
     .metric {
       grid-column: span 3;
-      padding: 18px;
-      min-height: 144px;
+      padding: 20px;
+      min-height: 150px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -291,8 +292,9 @@
     .metric-value {
       margin-top: 10px;
       font-size: clamp(1.9rem, 3vw, 2.7rem);
-      line-height: 0.95;
-      font-family: "Times New Roman", Times, serif;
+      line-height: 1;
+      font-family: "Google Sans", "Roboto", Arial, sans-serif;
+      font-weight: 500;
     }
 
     .metric-sub {
@@ -303,7 +305,7 @@
     }
 
     .panel {
-      padding: 18px;
+      padding: 20px;
       overflow: hidden;
     }
 
@@ -328,9 +330,10 @@
 
     .chart-shell {
       border: 1px solid var(--line);
-      background: #ffffff;
+      background: #fbfcff;
       padding: 12px;
       min-height: 220px;
+      border-radius: 20px;
     }
 
     .filter-panel {
@@ -343,10 +346,11 @@
     .filter-section {
       grid-column: span 6;
       border: 1px solid var(--line);
-      background: #fcfbf8;
-      padding: 14px;
+      background: #fbfcff;
+      padding: 16px;
       display: grid;
       gap: 12px;
+      border-radius: 20px;
     }
 
     .filter-section.full {
@@ -400,7 +404,8 @@
     .input {
       width: 100%;
       padding: 10px 12px;
-      min-height: 42px;
+      min-height: 46px;
+      background: var(--panel-2);
     }
 
     .chips {
@@ -419,9 +424,10 @@
 
     .filter-summary-card {
       border: 1px solid var(--line);
-      background: #ffffff;
-      padding: 12px;
+      background: #fbfcff;
+      padding: 14px;
       min-height: 84px;
+      border-radius: 20px;
     }
 
     .filter-summary-label {
@@ -435,7 +441,8 @@
       margin-top: 8px;
       font-size: 1.35rem;
       line-height: 1;
-      font-family: "Times New Roman", Times, serif;
+      font-family: "Google Sans", "Roboto", Arial, sans-serif;
+      font-weight: 500;
     }
 
     .filter-summary-note {
@@ -450,8 +457,9 @@
       align-items: center;
       gap: 8px;
       padding: 8px 10px;
-      border: 1px solid var(--line-strong);
-      background: var(--panel-2);
+      border: 1px solid transparent;
+      background: var(--accent-soft);
+      border-radius: 999px;
       font-size: 0.9rem;
     }
 
@@ -495,20 +503,21 @@
     .heat-cell {
       aspect-ratio: 1 / 1;
       min-width: 20px;
-      border: 1px solid #e1ddd5;
-      border-radius: 0;
-      background: #f7f5f1;
+      border: 1px solid #d6e3fb;
+      border-radius: 8px;
+      background: #f8fbff;
       cursor: pointer;
-      transition: border-color 140ms ease, background 140ms ease;
+      transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
     }
 
     .heat-cell:hover {
-      border-color: var(--text);
+      border-color: var(--accent);
+      transform: translateY(-1px);
     }
 
     .heat-cell.active {
       border-color: var(--accent);
-      box-shadow: inset 0 0 0 1px var(--accent);
+      box-shadow: inset 0 0 0 1px var(--accent), 0 0 0 2px rgba(26, 115, 232, 0.12);
     }
 
     .selection-title {
@@ -525,6 +534,10 @@
       font-size: 0.92rem;
     }
 
+    .selection-action {
+      margin-left: auto;
+    }
+
     .recipient-list {
       display: grid;
       gap: 10px;
@@ -537,7 +550,7 @@
       padding: 12px;
       border: 1px solid var(--line);
       background: #ffffff;
-      border-radius: 0;
+      border-radius: 18px;
       align-items: center;
     }
 
@@ -562,18 +575,65 @@
       min-width: 56px;
       padding: 8px 10px;
       text-align: center;
-      border: 1px solid var(--line-strong);
+      border: 1px solid transparent;
       background: var(--accent-soft);
       color: var(--accent);
       font-weight: 700;
+      border-radius: 999px;
     }
 
     .empty {
       padding: 14px;
-      border: 1px dashed var(--line-strong);
+      border: 1px dashed var(--line);
       background: #ffffff;
       color: var(--muted);
       line-height: 1.5;
+      border-radius: 18px;
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .overview-card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      border-radius: 20px;
+    }
+
+    .overview-card.wide {
+      grid-column: 1 / -1;
+    }
+
+    .overview-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .overview-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: #f8f9fa;
+      color: var(--text);
+    }
+
+    .overview-item strong {
+      font-size: 0.95rem;
+      overflow-wrap: anywhere;
+    }
+
+    .overview-item span {
+      color: var(--muted);
+      font-size: 0.86rem;
+      white-space: nowrap;
     }
 
     .bar-chart {
@@ -657,6 +717,10 @@
       .filter-summary {
         grid-template-columns: 1fr;
       }
+
+      .overview-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 700px) {
@@ -690,8 +754,10 @@
 <body>
   <main class="page">
     <header class="site-header panel">
+      <div class="eyebrow">Gmail-Style Analytics</div>
+      <h1>Gmail Stats</h1>
+      <p class="hero-desc">Una dashboard ispirata al linguaggio visivo di Gmail per leggere pattern di invio, fasce orarie, destinatari e domini con filtri chiari e immediati.</p>
       <img class="hero-logo" src="./logo.png" alt="Logo del progetto">
-      <p class="hero-desc">Dashboard locale per analizzare le email inviate: orari, heatmap settimanale, destinatari e domini, con filtri per anno ed export CSV.</p>
     </header>
 
     <section class="loader-section panel">
@@ -699,8 +765,8 @@
         <label class="file-label" for="fileInput">Apri file JSON</label>
         <input id="fileInput" type="file" accept=".json,application/json">
       </div>
-      <div id="statusTitle" hidden></div>
-      <div id="statusText" hidden></div>
+      <div class="status-value" id="statusTitle" hidden></div>
+      <div class="status-note" id="statusText" hidden></div>
     </section>
 
     <section class="grid" id="dashboard" aria-live="polite">
@@ -853,12 +919,13 @@
       <article class="panel wide">
         <div class="selection-title">
           <h2>Dettaglio fascia selezionata</h2>
+          <button class="button ghost selection-action" id="clearSelection" type="button">Panoramica generale</button>
           <div class="selection-meta" id="selectionMeta">Nessuna fascia selezionata</div>
         </div>
         <div class="recipient-list" id="selectionList">
           <div class="empty">
-            Seleziona una cella del calore settimanale per vedere i destinatari coinvolti, il numero
-            di email e gli ultimi invii in quella fascia.
+            Nessuna cella selezionata: qui vedrai una panoramica generale del periodo attivo oppure,
+            dopo un click sul calore settimanale, il dettaglio di una fascia specifica.
           </div>
         </div>
       </article>
@@ -921,6 +988,7 @@
         to: ""
       },
       heatmapYear: "",
+      selectedCell: null,
       inclusions: {
         recipients: new Set(),
         domains: new Set()
@@ -1001,6 +1069,7 @@
       heatmapYearSelect: document.getElementById("heatmapYearSelect"),
       heatmapSubheading: document.getElementById("heatmapSubheading"),
       heatmap: document.getElementById("heatmap"),
+      clearSelection: document.getElementById("clearSelection"),
       selectionMeta: document.getElementById("selectionMeta"),
       selectionList: document.getElementById("selectionList"),
       hourChart: document.getElementById("hourChart"),
@@ -1012,6 +1081,8 @@
     function setStatus(title, text) {
       els.statusTitle.textContent = title;
       els.statusText.textContent = text;
+      els.statusTitle.hidden = false;
+      els.statusText.hidden = false;
     }
 
     function escapeHtml(value) {
@@ -1482,6 +1553,64 @@
       });
     }
 
+    function renderGeneralSelection(stats, yearLabel = "") {
+      const scopeLabel = yearLabel ? `Panoramica generale | ${yearLabel}` : "Panoramica generale";
+      els.selectionMeta.textContent = scopeLabel;
+
+      const topRecipients = stats.recipients.slice(0, 5);
+      const topDomains = stats.domains.slice(0, 5);
+      const peakDayLabel = DAY_LABELS[DAY_KEYS[stats.peakDay.index]];
+      const topRecipientRows = topRecipients.length
+        ? topRecipients.map((recipient) => `
+          <div class="overview-item">
+            <strong>${escapeHtml(recipient.label)}</strong>
+            <span>${recipient.count} email</span>
+          </div>
+        `).join("")
+        : '<div class="empty">Nessun destinatario disponibile nel periodo selezionato.</div>';
+      const topDomainRows = topDomains.length
+        ? topDomains.map((domain) => `
+          <div class="overview-item">
+            <strong>${escapeHtml(domain.domain)}</strong>
+            <span>${domain.count} email</span>
+          </div>
+        `).join("")
+        : '<div class="empty">Nessun dominio disponibile nel periodo selezionato.</div>';
+
+      els.selectionList.innerHTML = `
+        <div class="overview-grid">
+          <div class="overview-card">
+            <div class="filter-summary-label">Email analizzate</div>
+            <div class="filter-summary-value">${stats.totalEmails}</div>
+            <div class="filter-summary-note">Valore complessivo della panoramica attuale.</div>
+          </div>
+          <div class="overview-card">
+            <div class="filter-summary-label">Ora piu intensa</div>
+            <div class="filter-summary-value">${String(stats.peakHour.hour).padStart(2, "0")}:00</div>
+            <div class="filter-summary-note">${stats.peakHour.count} email nella fascia piu attiva.</div>
+          </div>
+          <div class="overview-card">
+            <div class="filter-summary-label">Giorno piu attivo</div>
+            <div class="filter-summary-value">${peakDayLabel}</div>
+            <div class="filter-summary-note">${stats.peakDay.count} email nel giorno piu ricorrente.</div>
+          </div>
+          <div class="overview-card">
+            <div class="filter-summary-label">Destinatari unici</div>
+            <div class="filter-summary-value">${stats.totalRecipients}</div>
+            <div class="filter-summary-note">${stats.averageRecipientsPerEmail.toFixed(2)} destinatari medi per email.</div>
+          </div>
+          <div class="overview-card wide">
+            <div class="filter-summary-label">Destinatari principali</div>
+            <div class="overview-list">${topRecipientRows}</div>
+          </div>
+          <div class="overview-card wide">
+            <div class="filter-summary-label">Domini principali</div>
+            <div class="overview-list">${topDomainRows}</div>
+          </div>
+        </div>
+      `;
+    }
+
     function renderSelectionDetails(dayIndex, hour, entries, yearLabel = "") {
       const dayLabel = DAY_LABELS[DAY_KEYS[dayIndex]];
       const hourLabel = `${String(hour).padStart(2, "0")}:00`;
@@ -1539,7 +1668,7 @@
       els.selectionList.innerHTML = topRows + recentRows;
     }
 
-    function renderHeatmap(matrix, details, defaultSelection, yearLabel = "") {
+    function renderHeatmap(matrix, details, overviewStats, yearLabel = "") {
       els.heatmap.innerHTML = "";
       const max = Math.max(...matrix.flat(), 1);
 
@@ -1571,12 +1700,29 @@
           cell.title = `${DAY_NAMES[rowIndex]} ${String(hour).padStart(2, "0")}:00 - ${count} email`;
           cell.setAttribute("aria-label", `${DAY_LABELS[DAY_KEYS[rowIndex]]} alle ${String(hour).padStart(2, "0")}:00, ${count} email`);
           cell.addEventListener("click", () => {
+            const isSameCell =
+              state.selectedCell &&
+              state.selectedCell.day === rowIndex &&
+              state.selectedCell.hour === hour;
+
             els.heatmap.querySelectorAll(".heat-cell.active").forEach((item) => item.classList.remove("active"));
+
+            if (isSameCell) {
+              state.selectedCell = null;
+              renderGeneralSelection(overviewStats, yearLabel);
+              return;
+            }
+
+            state.selectedCell = { day: rowIndex, hour };
             cell.classList.add("active");
             renderSelectionDetails(rowIndex, hour, details[rowIndex][hour], yearLabel);
           });
 
-          if (defaultSelection.day === rowIndex && defaultSelection.hour === hour) {
+          if (
+            state.selectedCell &&
+            state.selectedCell.day === rowIndex &&
+            state.selectedCell.hour === hour
+          ) {
             cell.classList.add("active");
           }
 
@@ -1584,7 +1730,16 @@
         });
       });
 
-      renderSelectionDetails(defaultSelection.day, defaultSelection.hour, details[defaultSelection.day][defaultSelection.hour], yearLabel);
+      if (state.selectedCell) {
+        renderSelectionDetails(
+          state.selectedCell.day,
+          state.selectedCell.hour,
+          details[state.selectedCell.day][state.selectedCell.hour],
+          yearLabel
+        );
+      } else {
+        renderGeneralSelection(overviewStats, yearLabel);
+      }
     }
 
     function renderRecipients(recipients) {
@@ -1654,6 +1809,7 @@
         els.selectionList.innerHTML = '<div class="empty">Con i filtri correnti non rimangono email da analizzare.</div>';
         els.recipientList.innerHTML = '<div class="empty">Con i filtri correnti non rimangono destinatari.</div>';
         els.domainList.innerHTML = '<div class="empty">Con i filtri correnti non rimangono domini.</div>';
+        state.selectedCell = null;
         setStatus("Dataset filtrato a zero", "Rimuovi o allarga una o piu regole per tornare a vedere i dati.");
         return;
       }
@@ -1665,10 +1821,7 @@
       const heatmapYearLabel = state.heatmapYear ? `anno ${state.heatmapYear}` : "tutti gli anni filtrati";
 
       renderMetrics(stats);
-      renderHeatmap(heatmapStats.heatmap, heatmapStats.heatmapDetails, {
-        day: heatmapStats.peakDay.index,
-        hour: heatmapStats.peakHour.hour
-      }, heatmapYearLabel);
+      renderHeatmap(heatmapStats.heatmap, heatmapStats.heatmapDetails, heatmapStats, heatmapYearLabel);
       renderHourChart(stats.hourlyCounts);
       renderRecipients(stats.recipients);
       renderDomains(stats.domains);
@@ -1711,6 +1864,7 @@
       state.raw = raw;
       state.allEntries = parseDataset(raw);
       state.availableYears = [...new Set(state.allEntries.map((entry) => entry.year))].sort((a, b) => a - b);
+      state.selectedCell = null;
       if (state.yearRange.from && !state.availableYears.includes(Number(state.yearRange.from))) {
         state.yearRange.from = "";
       }
@@ -1762,6 +1916,11 @@
       downloadCsv(getFilteredEntries());
     });
 
+    els.clearSelection.addEventListener("click", () => {
+      state.selectedCell = null;
+      refreshDashboard();
+    });
+
     els.yearFromSelect.addEventListener("change", () => {
       state.yearRange.from = els.yearFromSelect.value;
       if (
@@ -1795,6 +1954,7 @@
       state.yearRange.from = "";
       state.yearRange.to = "";
       state.heatmapYear = "";
+      state.selectedCell = null;
       state.inclusions.recipients.clear();
       state.inclusions.domains.clear();
       state.exclusions.recipients.clear();
@@ -1814,6 +1974,7 @@
         state.yearRange.from = "";
         state.yearRange.to = "";
         state.heatmapYear = "";
+        state.selectedCell = null;
         state.inclusions.recipients.clear();
         state.inclusions.domains.clear();
         state.exclusions.recipients.clear();

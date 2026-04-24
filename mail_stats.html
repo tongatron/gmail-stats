@@ -230,6 +230,17 @@
       background: transparent;
     }
 
+    .button.dark {
+      background: var(--text);
+      color: #ffffff;
+      border-color: var(--text);
+    }
+
+    .button.dark:hover {
+      background: #2c2c2c;
+      border-color: #2c2c2c;
+    }
+
     #fileInput {
       display: none;
     }
@@ -810,31 +821,16 @@
 
           <section class="filter-section full">
             <div class="filter-section-header">
-              <h3 class="filter-section-title">Inserimento Manuale E Azioni</h3>
-              <div class="filter-section-note">Scrivi una mail completa oppure solo un dominio, per esempio `cliente@azienda.it` o `azienda.it`.</div>
-            </div>
-            <div class="filter-section-grid">
-              <div class="filter-block">
-                <label for="manualFilter">Aggiunta manuale</label>
-                <input class="input" id="manualFilter" type="text" placeholder="es. nome@dominio.it oppure dominio.it">
-                <div class="filter-actions">
-                  <button class="button ghost" id="addManualInclude" type="button">Includi</button>
-                  <button class="button ghost" id="addManualFilter" type="button">Escludi</button>
-                  <button class="button ghost" id="clearFilters" type="button">Azzera filtri</button>
-                  <button class="button ghost" id="exportCsv" type="button">Esporta CSV</button>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section class="filter-section full">
-            <div class="filter-section-header">
               <h3 class="filter-section-title">Filtri Attivi</h3>
-              <div class="filter-section-note">Rimuovi al volo una regola senza toccare le altre.</div>
+              <div class="filter-section-note">Rimuovi al volo una regola senza toccare le altre oppure azzera tutto.</div>
             </div>
             <div class="chips" id="activeFilters"></div>
             <div class="hint" id="filterHint">
               Nessun filtro attivo.
+            </div>
+            <div class="filter-actions">
+              <button class="button ghost" id="clearFilters" type="button">Azzera filtri</button>
+              <button class="button dark" id="exportCsv" type="button">Esporta CSV</button>
             </div>
           </section>
         </div>
@@ -994,15 +990,12 @@
       domainIncludeSelect: document.getElementById("domainIncludeSelect"),
       recipientSelect: document.getElementById("recipientSelect"),
       domainSelect: document.getElementById("domainSelect"),
-      manualFilter: document.getElementById("manualFilter"),
       activeFilters: document.getElementById("activeFilters"),
       filterHint: document.getElementById("filterHint"),
       addRecipientInclusion: document.getElementById("addRecipientInclusion"),
       addDomainInclusion: document.getElementById("addDomainInclusion"),
       addRecipientExclusion: document.getElementById("addRecipientExclusion"),
       addDomainExclusion: document.getElementById("addDomainExclusion"),
-      addManualInclude: document.getElementById("addManualInclude"),
-      addManualFilter: document.getElementById("addManualFilter"),
       exportCsv: document.getElementById("exportCsv"),
       clearFilters: document.getElementById("clearFilters"),
       heatmapYearSelect: document.getElementById("heatmapYearSelect"),
@@ -1694,7 +1687,6 @@
         target.domains.add(normalized);
       }
 
-      els.manualFilter.value = "";
       refreshDashboard();
     }
 
@@ -1764,24 +1756,6 @@
     els.addDomainExclusion.addEventListener("click", () => {
       addFilter("exclude", "domain", els.domainSelect.value);
       els.domainSelect.value = "";
-    });
-
-    els.addManualInclude.addEventListener("click", () => {
-      const value = els.manualFilter.value.trim();
-      if (!value) {
-        return;
-      }
-      const kind = value.includes("@") ? "recipient" : "domain";
-      addFilter("include", kind, value);
-    });
-
-    els.addManualFilter.addEventListener("click", () => {
-      const value = els.manualFilter.value.trim();
-      if (!value) {
-        return;
-      }
-      const kind = value.includes("@") ? "recipient" : "domain";
-      addFilter("exclude", kind, value);
     });
 
     els.exportCsv.addEventListener("click", () => {

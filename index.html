@@ -106,17 +106,17 @@
 
     .hero-logo {
       display: block;
-      margin: 6px 0 0;
-      width: min(100%, 240px);
-      max-height: 120px;
+      margin: 0 auto;
+      width: min(100%, 1000px);
+      max-height: 400px;
       object-fit: contain;
-      object-position: left center;
+      object-position: center;
     }
 
     .hero-desc {
-      margin: 0;
+      margin: 14px auto 0;
       max-width: 720px;
-      text-align: left;
+      text-align: center;
       color: var(--muted);
       font-size: 0.98rem;
       line-height: 1.55;
@@ -124,9 +124,12 @@
 
     .site-header {
       padding: 28px 28px 24px;
+      margin-bottom: 20px;
       display: grid;
       gap: 12px;
-      align-items: start;
+      align-items: center;
+      text-align: center;
+      justify-items: center;
     }
 
     .loader-section {
@@ -754,20 +757,14 @@
 <body>
   <main class="page">
     <header class="site-header panel">
-      <div class="eyebrow">Gmail-Style Analytics</div>
-      <h1>Gmail Stats</h1>
-      <p class="hero-desc">Una dashboard ispirata al linguaggio visivo di Gmail per leggere pattern di invio, fasce orarie, destinatari e domini con filtri chiari e immediati.</p>
       <img class="hero-logo" src="./logo.png" alt="Logo del progetto">
-    </header>
-
-    <section class="loader-section panel">
       <div class="actions">
         <label class="file-label" for="fileInput">Apri file JSON</label>
         <input id="fileInput" type="file" accept=".json,application/json">
       </div>
       <div class="status-value" id="statusTitle" hidden></div>
       <div class="status-note" id="statusText" hidden></div>
-    </section>
+    </header>
 
     <section class="grid" id="dashboard" aria-live="polite">
       <article class="metric">
@@ -1875,8 +1872,6 @@
     }
 
     async function loadDefaultFile() {
-      setStatus("Caricamento in corso", "Sto cercando `sent_emails.json` nella stessa cartella della pagina.");
-
       try {
         const response = await fetch("./sent_emails.json", { cache: "no-store" });
         if (!response.ok) {
@@ -1885,10 +1880,8 @@
         const raw = await response.json();
         applyData(raw);
       } catch (error) {
-        setStatus(
-          "Caricamento automatico non riuscito",
-          "Il browser non ha potuto leggere `sent_emails.json` automaticamente. Usa il caricamento manuale oppure avvia un piccolo server locale da questa cartella."
-        );
+        els.statusTitle.hidden = true;
+        els.statusText.hidden = true;
       }
     }
 

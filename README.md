@@ -6,7 +6,7 @@
 
 ## Cosa contiene
 
-- `mail_stats.html`
+- `index.html`
   Dashboard locale per analizzare orari di invio, heatmap settimanale, destinatari, domini, filtri per anno ed export CSV.
 - `scripts/export_sent_emails.mjs`
   Script Node.js che usa Gmail API e OAuth per esportare le mail inviate.
@@ -95,7 +95,7 @@ Al prossimo avvio con lo stesso comando, riprende automaticamente da dove si era
 Apri:
 
 ```bash
-mail_stats.html
+open index.html
 ```
 
 La pagina può:

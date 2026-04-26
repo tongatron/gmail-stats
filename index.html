@@ -312,6 +312,17 @@
       margin: 0 0 16px;
     }
 
+    .example-banner {
+      background: #fef7c3;
+      border: 1px solid #f6d35a;
+      color: #5a4500;
+      border-radius: 12px;
+      padding: 10px 16px;
+      margin: 0 0 16px;
+      font-weight: 500;
+      text-align: center;
+    }
+
     .help-dialog-actions {
       display: flex;
       justify-content: flex-end;
@@ -865,6 +876,8 @@
       <div class="status-value" id="statusTitle" hidden></div>
       <div class="status-note" id="statusText" hidden></div>
     </header>
+
+    <div class="example-banner" id="exampleBanner" hidden>Dataset test, carica il tuo file</div>
 
     <section class="grid" id="dashboard" aria-live="polite">
       <article class="metric">
@@ -1989,10 +2002,16 @@
       refreshDashboard();
     }
 
-    async function loadJsonFromUrl(url) {
+    function setExampleBanner(visible) {
+      const banner = document.getElementById("exampleBanner");
+      if (banner) banner.hidden = !visible;
+    }
+
+    async function loadJsonFromUrl(url, isExample = false) {
       const response = await fetch(url, { cache: "no-store" });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const raw = await response.json();
+      setExampleBanner(isExample);
       state.yearRange.from = "";
       state.yearRange.to = "";
       state.heatmapYear = "";
@@ -2006,7 +2025,7 @@
 
     async function loadDefaultFile() {
       try {
-        await loadJsonFromUrl("./example_sent_emails.json");
+        await loadJsonFromUrl("./example_sent_emails.json", true);
       } catch (error) {
         els.statusTitle.hidden = true;
         els.statusText.hidden = true;
@@ -2015,7 +2034,7 @@
 
     document.getElementById("loadExampleButton").addEventListener("click", async () => {
       try {
-        await loadJsonFromUrl("./example_sent_emails.json");
+        await loadJsonFromUrl("./example_sent_emails.json", true);
       } catch (error) {
         setStatus("Esempio non disponibile", "Non sono riuscito a caricare example_sent_emails.json. Apri la pagina tramite un server locale o GitHub Pages.");
       }
@@ -2100,6 +2119,7 @@
       try {
         const text = await file.text();
         const raw = JSON.parse(text);
+        setExampleBanner(false);
         state.yearRange.from = "";
         state.yearRange.to = "";
         state.heatmapYear = "";

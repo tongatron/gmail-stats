@@ -312,6 +312,34 @@
       margin: 0 0 16px;
     }
 
+    .collapsible-section > .collapsible-summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      user-select: none;
+    }
+
+    .collapsible-section > .collapsible-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .collapsible-summary h2 {
+      margin: 0;
+    }
+
+    .collapsible-chevron {
+      transition: transform 160ms ease;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .collapsible-section[open] > .collapsible-summary .collapsible-chevron {
+      transform: rotate(180deg);
+    }
+
     .example-banner {
       background: #fef7c3;
       border: 1px solid #f6d35a;
@@ -904,7 +932,8 @@
       </article>
 
       <article class="panel full">
-        <h2>Filtri</h2>
+        <details class="collapsible-section">
+          <summary class="collapsible-summary"><h2>Filtri</h2><span class="collapsible-chevron" aria-hidden="true">▾</span></summary>
         <div class="subheading">
           I filtri sono separati per periodo, inclusioni ed esclusioni. Tutte le metriche, il calore
           settimanale e gli elenchi vengono ricalcolati coerentemente sulla selezione attiva.
@@ -1009,6 +1038,7 @@
             </div>
           </section>
         </div>
+        </details>
       </article>
 
       <article class="panel full">

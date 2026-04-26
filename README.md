@@ -2,113 +2,40 @@
 
 ![Logo](logo.png)
 
-`gmail-stats` e una dashboard locale con script Gmail API per analizzare le email inviate e generare un dataset JSON compatibile con la pagina HTML.
+`gmail-stats` è una dashboard locale per analizzare le tue email inviate. Genera un JSON dal tuo account Gmail e caricalo nella pagina `index.html` per vedere statistiche, heatmap settimanali, destinatari frequenti, domini, filtri per anno ed export CSV.
 
 ## Cosa contiene
 
-- `index.html`
-  Dashboard locale per analizzare orari di invio, heatmap settimanale, destinatari, domini, filtri per anno ed export CSV.
-- `scripts/export_sent_emails.mjs`
-  Script Node.js che usa Gmail API e OAuth per esportare le mail inviate.
-- `scripts/sync_sent_emails.sh`
-  Wrapper semplice per lanciare l'export con un solo comando.
+- `index.html` — la dashboard. Aprila in un browser e carica il JSON.
+- `scripts/apps_script_export.gs` — script Google Apps Script per generare il JSON senza installare nulla (consigliato).
+- `scripts/export_sent_emails.mjs` — alternativa Node.js per chi preferisce la riga di comando.
 
-## Requisiti
+## Come creare il JSON (consigliato, senza installazioni)
 
-- Node.js installato
-- Un progetto Google Cloud con Gmail API abilitata
-- Un OAuth client di tipo Desktop App
+Bastano 4 passi nel browser:
 
-## File sensibili
+1. Apri [script.google.com](https://script.google.com/) e clicca **Nuovo progetto**.
+2. Cancella il codice di esempio e incolla il contenuto di [`scripts/apps_script_export.gs`](scripts/apps_script_export.gs).
+3. In alto, seleziona la funzione `exportSentEmails` e clicca **Esegui**. La prima volta Google chiede l'autorizzazione: accetta l'accesso in sola lettura a Gmail e Drive.
+4. Al termine, sul tuo Google Drive trovi il file `sent_emails_all_years.json`. Scaricalo e caricalo nella dashboard `index.html`.
 
-Questi file devono restare solo in locale e sono esclusi da git:
-
-- `credentials.json`
-- `token.json`
-- `sent_emails.json`
-- `sent_emails_all_years.json`
-- `.gmail_export_checkpoint.json`
-
-## Setup OAuth Google
-
-1. Apri Google Cloud Console.
-2. Crea o seleziona un progetto.
-3. Abilita `Gmail API`.
-4. Vai in `APIs & Services` -> `OAuth consent screen` e completa la configurazione.
-5. Vai in `APIs & Services` -> `Credentials`.
-6. Crea `OAuth client ID`.
-7. Scegli `Desktop app`.
-8. Scarica il file JSON.
-9. Rinominalo in `credentials.json`.
-10. Mettilo nella cartella del progetto.
-
-Posizione attesa nel progetto:
-
-```bash
-./credentials.json
-```
-
-## Installazione
-
-```bash
-npm install
-```
-
-## Generare il JSON completo delle mail inviate
-
-Comando consigliato:
-
-```bash
-npm run gmail:sync
-```
-
-In alternativa:
-
-```bash
-./scripts/sync_sent_emails.sh
-```
-
-Alla prima esecuzione:
-
-1. si apre il browser per il login Google
-2. autorizzi l'accesso in sola lettura a Gmail
-3. viene creato `token.json`
-4. viene generato `sent_emails_all_years.json`
-
-Output atteso:
-
-- `sent_emails_all_years.json`
-  Dataset completo nello stesso formato usato dalla dashboard
-
-## Checkpoint e ripresa
-
-Se l'export viene interrotto o Gmail impone limiti temporanei, lo script salva lo stato in:
-
-```bash
-.gmail_export_checkpoint.json
-```
-
-Al prossimo avvio con lo stesso comando, riprende automaticamente da dove si era fermato.
+> **Caselle molto grandi**: Apps Script ha un limite di ~6 minuti per esecuzione. Se l'export non finisce in tempo, vedi un messaggio nei log e basta rilanciare `exportSentEmails`: riprende automaticamente dal checkpoint. Per ricominciare da zero esegui invece `resetExport`.
 
 ## Uso della dashboard
-
-Apri:
 
 ```bash
 open index.html
 ```
 
-La pagina può:
+La pagina permette di:
 
-- aprire manualmente un file JSON
+- caricare un file JSON
 - filtrare per anno o intervallo di anni
 - includere o escludere destinatari e domini
-- mostrare la heatmap settimanale anche per un anno specifico
-- esportare in CSV i dati attualmente filtrati
+- vedere la heatmap settimanale per un anno o per il totale
+- esportare in CSV i dati filtrati
 
 ## Formato JSON atteso
-
-Il file generato segue questa struttura:
 
 ```json
 {
@@ -127,8 +54,41 @@ Il file generato segue questa struttura:
 }
 ```
 
-## Note
+---
 
-- `sent_emails_all_years.json` è il file consigliato per analisi storiche complete.
-- `sent_emails.json` può essere usato come dataset più piccolo o parziale.
-- I file con dati personali non vengono più committati nel repository.
+## Opzione avanzata: export via Node.js
+
+Per chi preferisce generare il JSON localmente da terminale invece che in cloud.
+
+### Requisiti
+
+- Node.js installato
+- Un progetto Google Cloud con Gmail API abilitata
+- Un OAuth client di tipo Desktop App
+
+### Setup OAuth
+
+1. Apri [Google Cloud Console](https://console.cloud.google.com/), crea o seleziona un progetto.
+2. Abilita `Gmail API`.
+3. In `APIs & Services` → `OAuth consent screen` completa la configurazione.
+4. In `APIs & Services` → `Credentials` crea un `OAuth client ID` di tipo `Desktop app`.
+5. Scarica il JSON, rinominalo `credentials.json` e mettilo nella cartella del progetto.
+
+### Esecuzione
+
+```bash
+npm install
+npm run gmail:sync
+```
+
+Alla prima esecuzione si apre il browser per il login Google. Al termine trovi `sent_emails_all_years.json` nella cartella del progetto.
+
+Se l'export viene interrotto, rilancia lo stesso comando: riprende da `.gmail_export_checkpoint.json`.
+
+### File sensibili (esclusi da git)
+
+- `credentials.json`
+- `token.json`
+- `sent_emails.json`
+- `sent_emails_all_years.json`
+- `.gmail_export_checkpoint.json`

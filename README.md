@@ -15,9 +15,10 @@
 Bastano 4 passi nel browser:
 
 1. Apri [script.google.com](https://script.google.com/) e clicca **Nuovo progetto**.
-2. Cancella il codice di esempio e incolla il contenuto di [`scripts/apps_script_export.gs`](scripts/apps_script_export.gs).
-3. In alto, seleziona la funzione `exportSentEmails` e clicca **Esegui**. La prima volta Google chiede l'autorizzazione: accetta l'accesso in sola lettura a Gmail e Drive.
-4. Al termine, sul tuo Google Drive trovi il file `sent_emails_all_years.json`. Scaricalo e caricalo nella dashboard `index.html`.
+2. Cancella il codice di esempio in `Codice.gs` e incolla il contenuto di [`scripts/apps_script_export.gs`](scripts/apps_script_export.gs). Salva con `⌘S` (o l'icona del floppy disk).
+3. Nella **barra sopra il codice** (non il pulsante "Esegui il deployment" in alto a destra) seleziona la funzione `exportSentEmails` dal menu a tendina, poi clicca **▷ Esegui**.
+4. La prima volta Google chiede l'autorizzazione: scegli il tuo account → *Avanzate* → *Vai al progetto (non sicuro)* → consenti l'accesso a Gmail e Drive. L'avviso "non sicuro" compare perché lo script non è verificato da Google, ma è il tuo.
+5. Al termine, sul tuo Google Drive trovi `sent_emails_all_years.json`. Scaricalo e caricalo nella dashboard `index.html` con **Apri file JSON**.
 
 > **Caselle molto grandi**: Apps Script ha un limite di ~6 minuti per esecuzione. Se l'export non finisce in tempo, vedi un messaggio nei log e basta rilanciare `exportSentEmails`: riprende automaticamente dal checkpoint. Per ricominciare da zero esegui invece `resetExport`.
 

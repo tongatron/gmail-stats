@@ -3,6 +3,7 @@
  *
  * Esegui exportSentEmails() in script.google.com per generare
  * sent_emails_all_years.json sul tuo Google Drive.
+ * Al termine trovi nei log un link diretto per scaricarlo.
  *
  * Se l'esecuzione raggiunge il limite di tempo (~6 min), rilancia
  * la stessa funzione: riprende automaticamente da dove si era fermata.
@@ -33,10 +34,12 @@ function exportSentEmails() {
     }
     const threads = GmailApp.search(QUERY, offset, PAGE_SIZE);
     if (threads.length === 0) {
-      saveOutput(messages, userEmail);
+      const file = saveOutput(messages, userEmail);
       deleteCheckpoint();
       props.deleteProperty('offset');
       Logger.log('Completato: ' + messages.length + ' messaggi salvati in ' + FILE_NAME + ' su Drive.');
+      Logger.log('Scarica il JSON da qui: ' + file.getDownloadUrl());
+      Logger.log('Oppure aprilo su Drive: ' + file.getUrl());
       return;
     }
     for (const thread of threads) {
@@ -71,7 +74,7 @@ function saveOutput(messages, userEmail) {
     total_messages: messages.length,
     messages: messages
   };
-  writeFile(FILE_NAME, JSON.stringify(output, null, 2));
+  return writeFile(FILE_NAME, JSON.stringify(output, null, 2));
 }
 
 function loadCheckpoint() {
@@ -93,7 +96,7 @@ function writeFile(name, content) {
   const blob = Utilities.newBlob(content, 'application/json', name);
   const files = DriveApp.getFilesByName(name);
   while (files.hasNext()) files.next().setTrashed(true);
-  DriveApp.createFile(blob);
+  return DriveApp.createFile(blob);
 }
 
 function resetExport() {

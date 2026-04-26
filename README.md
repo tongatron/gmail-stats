@@ -12,13 +12,13 @@
 
 ## Come creare il JSON (consigliato, senza installazioni)
 
-Bastano 4 passi nel browser:
+Bastano 5 passi nel browser:
 
 1. Apri [script.google.com](https://script.google.com/) e clicca **Nuovo progetto**.
 2. Cancella il codice di esempio in `Codice.gs` e incolla il contenuto di [`scripts/apps_script_export.gs`](scripts/apps_script_export.gs). Salva con `⌘S` (o l'icona del floppy disk).
 3. Nella **barra sopra il codice** (non il pulsante "Esegui il deployment" in alto a destra) seleziona la funzione `exportSentEmails` dal menu a tendina, poi clicca **▷ Esegui**.
 4. La prima volta Google chiede l'autorizzazione: scegli il tuo account → *Avanzate* → *Vai al progetto (non sicuro)* → consenti l'accesso a Gmail e Drive. L'avviso "non sicuro" compare perché lo script non è verificato da Google, ma è il tuo.
-5. Al termine, sul tuo Google Drive trovi `sent_emails_all_years.json`. Scaricalo e caricalo nella dashboard `index.html` con **Apri file JSON**.
+5. Al termine, apri i log dell'esecuzione in Apps Script e clicca il link **Scarica il JSON da qui**; in alternativa, sul tuo Google Drive trovi `sent_emails_all_years.json`. Scaricalo e caricalo nella dashboard `index.html` con **Apri file JSON**.
 
 > **Caselle molto grandi**: Apps Script ha un limite di ~6 minuti per esecuzione. Se l'export non finisce in tempo, vedi un messaggio nei log e basta rilanciare `exportSentEmails`: riprende automaticamente dal checkpoint. Per ricominciare da zero esegui invece `resetExport`.
 

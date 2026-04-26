@@ -852,7 +852,6 @@
       <img class="hero-logo" src="./logo.png" alt="Logo del progetto">
       <div class="actions">
         <button class="button square" id="howToButton" type="button" aria-haspopup="dialog">Come generare il file</button>
-        <button class="button square" id="loadExampleButton" type="button">Carica esempio</button>
         <label class="file-label" for="fileInput">Apri file JSON</label>
         <input id="fileInput" type="file" accept=".json,application/json">
       </div>
@@ -2032,15 +2031,7 @@
       }
     }
 
-    document.getElementById("loadExampleButton").addEventListener("click", async () => {
-      try {
-        await loadJsonFromUrl("./example_sent_emails.json", true);
-      } catch (error) {
-        setStatus("Esempio non disponibile", "Non sono riuscito a caricare example_sent_emails.json. Apri la pagina tramite un server locale o GitHub Pages.");
-      }
-    });
-
-    els.addRecipientInclusion.addEventListener("click", () => {
+els.addRecipientInclusion.addEventListener("click", () => {
       addFilter("include", "recipient", els.recipientIncludeSelect.value);
       els.recipientIncludeSelect.value = "";
     });
